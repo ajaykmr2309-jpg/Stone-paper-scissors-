@@ -1,50 +1,303 @@
+<!DOCTYPE html>
+<html>
 <head>
-  <title>Stone Paper Scissors</title>
+  <title>Stone Paper Scissors - 2 Player</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background: #f2f2f2;
-      padding: 30px 15px;
+      background: #111827;
+      color: white;
+      padding: 20px;
     }
 
-    h1 {
-      margin-bottom: 10px;
+    .box {
+      max-width: 450px;
+      margin: auto;
+      background: #1f2937;
+      padding: 25px;
+      border-radius: 20px;
     }
 
-    .buttons {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin: 30px 0;
+    input {
+      width: 90%;
+      padding: 14px;
+      margin: 8px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
     }
 
-    button {
-      padding: 15px 20px;
-      font-size: 18px;
+    .mainBtn {
+      padding: 14px 22px;
+      margin: 8px;
       border: none;
       border-radius: 10px;
+      font-size: 17px;
       cursor: pointer;
     }
 
+    .choice {
+      font-size: 42px;
+      padding: 15px;
+      margin: 7px;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      background: white;
+    }
+
+    #game {
+      display: none;
+    }
+
+    #status {
+      margin: 20px 0;
+      font-size: 18px;
+    }
+
     #result {
-      font-size: 22px;
+      font-size: 24px;
       font-weight: bold;
-      margin-top: 25px;
+      margin: 20px 0;
     }
   </style>
 </head>
 
 <body>
 
-  <h1>🪨 Stone 📄 Paper ✂️ Scissors</h1>
-  <p>Choose your move</p>
+<div class="box">
 
-  <div class="buttons">
-    <button onclick="play('Stone')">🪨 Stone</button>
-    <button onclick="play('Paper')">📄 Paper</button>
-    <button onclick="play('Scissors')">✂️ Scissors</button>
+  <div id="lobby">
+    <h1>🪨 📄 ✂️</h1>
+    <h2>2 Player Game</h2>
+
+    <button class="mainBtn" onclick="createRoom()">
+      Create Room
+    </button>
+
+    <hr>
+
+    <input id="roomInput" placeholder="Enter Room Code">
+
+    <button class="mainBtn" onclick="joinRoom()">
+      Join Room
+    </button>
+
+    <p id="lobbyStatus"></p>
   </div>
 
-  <div id="result">Game 
+
+  <div id="game">
+
+    <h2>Room: <span id="roomCode"></span></h2>
+
+    <p id="players">Waiting for player...</p>
+
+    <div id="status">
+      Choose your move:
+    </div>
+
+    <button class="choice" onclick="makeMove('stone')">🪨</button>
+    <button class="choice" onclick="makeMove('paper')">📄</button>
+    <button class="choice" onclick="makeMove('scissors')">✂️</button>
+
+    <div id="result"></div>
+
+  </div>
+
+</div>
+
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import {
+  getDatabase,
+  ref,
+  set,
+  get,
+  update,
+  onValue
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC5nCnRk8rHzEZX7BylT1T9T5lAWPkRQsjw",
+  authDomain: "stonepaperscissors-598d1.firebaseapp.com",
+  databaseURL: "https://stonepaperscissors-598d1-default-rtdb.firebaseio.com",
+  projectId: "stonepaperscissors-598d1",
+  storageBucket: "stonepaperscissors-598d1.firebasestorage.app",
+  messagingSenderId: "699484749817",
+  appId: "1:699484749817:web:861e86fe13c4bf94ef8728"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let roomCode = "";
+let player = "";
+
+function generateRoom() {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+
+window.createRoom = async function() {
+
+  roomCode = generateRoom();
+  player = "player1";
+
+  await set(ref(db, "rooms/" + roomCode), {
+    player1: true,
+    player2: false,
+    move1: "",
+    move2: "",
+    result: ""
+  });
+
+  openGame();
+
+  document.getElementById("lobbyStatus").innerText =
+    "Room created: " + roomCode;
+};
+
+
+window.joinRoom = async function() {
+
+  roomCode =
+    document.getElementById("roomInput").value
+    .trim()
+    .toUpperCase();
+
+  if (!roomCode) {
+    alert("Enter room code");
+    return;
+  }
+
+  const roomRef = ref(db, "rooms/" + roomCode);
+  const snapshot = await get(roomRef);
+
+  if (!snapshot.exists()) {
+    alert("Room not found");
+    return;
+  }
+
+  const data = snapshot.val();
+
+  if (data.player2) {
+    alert("Room is full");
+    return;
+  }
+
+  player = "player2";
+
+  await update(roomRef, {
+    player2: true
+  });
+
+  openGame();
+};
+
+
+function openGame() {
+
+  document.getElementById("lobby").style.display = "none";
+
+  document.getElementById("game").style.display = "block";
+
+  document.getElementById("roomCode").innerText = roomCode;
+
+  listenRoom();
+}
+
+
+function listenRoom() {
+
+  const roomRef = ref(db, "rooms/" + roomCode);
+
+  onValue(roomRef, (snapshot) => {
+
+    const data = snapshot.val();
+
+    if (!data) return;
+
+    if (data.player1 && data.player2) {
+
+      document.getElementById("players").innerText =
+        "👥 2 Players Connected";
+
+    } else {
+
+      document.getElementById("players").innerText =
+        "⏳ Waiting for second player...";
+    }
+
+
+    if (data.move1 && data.move2) {
+
+      calculateWinner(data.move1, data.move2);
+
+    }
+
+  });
+
+}
+
+
+window.makeMove = async function(move) {
+
+  const roomRef = ref(db, "rooms/" + roomCode);
+
+  if (player === "player1") {
+
+    await update(roomRef, {
+      move1: move
+    });
+
+  } else {
+
+    await update(roomRef, {
+      move2: move
+    });
+
+  }
+
+  document.getElementById("status").innerText =
+    "✅ Move selected. Waiting for opponent...";
+};
+
+
+function calculateWinner(a, b) {
+
+  let result = "";
+
+  if (a === b) {
+
+    result = "🤝 Draw!";
+
+  } else if (
+    (a === "stone" && b === "scissors") ||
+    (a === "paper" && b === "stone") ||
+    (a === "scissors" && b === "paper")
+  ) {
+
+    result = "🏆 Player 1 Wins!";
+
+  } else {
+
+    result = "🏆 Player 2 Wins!";
+
+  }
+
+  document.getElementById("result").innerText = result;
+
+}
+
+</script>
+
+</body>
+</html>
