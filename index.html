@@ -18,7 +18,7 @@
       min-height: 100vh;
       font-family: Arial, sans-serif;
       background: #0f172a;
-      color: white;
+      color: #fff;
       text-align: center;
     }
 
@@ -237,17 +237,11 @@
 
     <div>
 
-      <button class="choice" data-move="stone">
-        🪨
-      </button>
+      <button class="choice" data-move="stone">🪨</button>
 
-      <button class="choice" data-move="paper">
-        📄
-      </button>
+      <button class="choice" data-move="paper">📄</button>
 
-      <button class="choice" data-move="scissors">
-        ✂️
-      </button>
+      <button class="choice" data-move="scissors">✂️</button>
 
     </div>
 
@@ -274,6 +268,8 @@
 
 <script type="module">
 
+/* FIREBASE */
+
 import { initializeApp }
 from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
@@ -289,18 +285,39 @@ import {
 from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
 
 
+const firebaseConfig = {
+  apiKey: "AIzaSyC5nCnRk8rHzEZX7BylT1T9T5lAWPkRQsjw",
+  authDomain: "stonepaperscissors-598d1.firebaseapp.com",
+  databaseURL: "https://stonepaperscissors-598d1-default-rtdb.firebaseio.com",
+  projectId: "stonepaperscissors-598d1",
+  storageBucket: "stonepaperscissors-598d1.firebasestorage.app",
+  messagingSenderId: "699484749817",
+  appId: "1:699484749817:web:861e86fe13c4bf94ef8728",
+  measurementId: "G-5HD3MDN5EC"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const db = getDatabase(app);
+
+
 /* TELEGRAM */
 
-const tg = window.Telegram.WebApp;
+const tg = window.Telegram
+  ? window.Telegram.WebApp
+  : null;
 
-tg.ready();
-tg.expand();
+if (tg) {
+  tg.ready();
+  tg.expand();
+}
 
-const telegramUser =
-  tg.initDataUnsafe &&
-  tg.initDataUnsafe.user
-    ? tg.initDataUnsafe.user
-    : null;
+
+let telegramUser = null;
+
+if (tg && tg.initDataUnsafe) {
+  telegramUser = tg.initDataUnsafe.user || null;
+}
 
 
 let myName = "Player";
@@ -318,24 +335,6 @@ if (telegramUser) {
   }
 
 }
-
-
-/* FIREBASE */
-
-const firebaseConfig = {
-  apiKey: "AIzaSyC5nCnRk8rHzEZX7BylT1T9T5lAWPkRQsjw",
-  authDomain: "stonepaperscissors-598d1.firebaseapp.com",
-  databaseURL: "https://stonepaperscissors-598d1-default-rtdb.firebaseio.com",
-  projectId: "stonepaperscissors-598d1",
-  storageBucket: "stonepaperscissors-598d1.firebasestorage.app",
-  messagingSenderId: "699484749817",
-  appId: "1:699484749817:web:861e86fe13c4bf94ef8728",
-  measurementId: "G-5HD3MDN5EC"
-};
-
-const app = initializeApp(firebaseConfig);
-
-const db = getDatabase(app);
 
 
 /* VARIABLES */
@@ -399,50 +398,54 @@ lobbyPlayer.innerText = myName;
 
 document
   .getElementById("createBtn")
-  .addEventListener(
-    "click",
-    createRoom
-  );
+  .addEventListener("click", createRoom);
 
 
 async function createRoom() {
 
   try {
 
-    roomCode =
-      Math.random()
-        .toString(36)
-        .substring(2, 8)
-        .toUpperCase();
+    roomCode = "";
+
+    while (!roomCode) {
+
+      const code =
+        Math.random()
+          .toString(36)
+          .substring(2, 8)
+          .toUpperCase();
+
+      const existing =
+        await get(
+          ref(db, "rooms/" + code)
+        );
+
+      if (!existing.exists()) {
+        roomCode = code;
+      }
+
+    }
 
     player = "player1";
 
     await set(
       ref(db, "rooms/" + roomCode),
       {
-
         player1: true,
-
         player2: false,
 
         player1Name: myName,
-
         player2Name: "",
 
         move1: "",
-
         move2: "",
 
         score1: 0,
-
         score2: 0,
 
         result: "",
-
         round: 1,
-
         finished: false
-
       }
     );
 
@@ -465,10 +468,7 @@ async function createRoom() {
 
 document
   .getElementById("joinBtn")
-  .addEventListener(
-    "click",
-    joinRoom
-  );
+  .addEventListener("click", joinRoom);
 
 
 async function joinRoom() {
@@ -527,11 +527,8 @@ async function joinRoom() {
     await update(
       roomRef,
       {
-
         player2: true,
-
         player2Name: myName
-
       }
     );
 
@@ -684,3 +681,413 @@ document
     button.addEventListener(
       "click",
       () => {
+
+        makeMove(
+          button.dataset.move
+        );
+
+      }
+    );
+
+  });
+
+
+/* MAKE MOVE */
+
+async function makeMove(move) {
+
+  if (myMove) return;
+
+  if (!roomCode || !player) return;
+
+  myMove = move;
+
+  document
+    .querySelectorAll(".choice")
+    .forEach(button => {
+
+      button.disabled = true;
+
+    });
+
+
+  const roomRef =
+    ref(db, "rooms/" + roomCode);
+
+
+  try {
+
+    if (player === "player1") {
+
+      await update(
+        roomRef,
+        {
+          move1: move
+        }
+      );
+
+    } else {
+
+      await update(
+        roomRef,
+        {
+          move2: move
+        }
+      );
+
+    }
+
+
+    statusText.innerText =
+      "✅ Move selected. Waiting for opponent...";
+
+  } catch (error) {
+
+    console.error(error);
+
+    myMove = "";
+
+    document
+      .querySelectorAll(".choice")
+      .forEach(button => {
+
+        button.disabled = false;
+
+      });
+
+    alert("Could not save move");
+
+  }
+
+}
+
+
+/* RESULT */
+
+async function calculateResult(data) {
+
+  if (processingResult) return;
+
+  processingResult = true;
+
+  stopTimer();
+
+
+  let result = "";
+
+  let score1 =
+    Number(data.score1 || 0);
+
+  let score2 =
+    Number(data.score2 || 0);
+
+
+  if (
+    data.move1 === data.move2
+  ) {
+
+    result = "🤝 Draw!";
+
+  }
+
+  else if (
+
+    (
+      data.move1 === "stone" &&
+      data.move2 === "scissors"
+    )
+
+    ||
+
+    (
+      data.move1 === "paper" &&
+      data.move2 === "stone"
+    )
+
+    ||
+
+    (
+      data.move1 === "scissors" &&
+      data.move2 === "paper"
+    )
+
+  ) {
+
+    result =
+      "🏆 " +
+      (data.player1Name || "Player 1") +
+      " Wins!";
+
+    score1++;
+
+  }
+
+  else {
+
+    result =
+      "🏆 " +
+      (data.player2Name || "Player 2") +
+      " Wins!";
+
+    score2++;
+
+  }
+
+
+  try {
+
+    await update(
+      ref(db, "rooms/" + roomCode),
+      {
+        score1: score1,
+        score2: score2,
+        result: result,
+        finished: true
+      }
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+  }
+
+
+  resultText.innerText =
+    result;
+
+  newRoundBtn
+    .classList
+    .remove("hidden");
+
+}
+
+
+/* NEW ROUND */
+
+newRoundBtn.addEventListener(
+  "click",
+  newRound
+);
+
+
+async function newRound() {
+
+  try {
+
+    myMove = "";
+
+    processingResult = false;
+
+    stopTimer();
+
+
+    document
+      .querySelectorAll(".choice")
+      .forEach(button => {
+
+        button.disabled = false;
+
+      });
+
+
+    resultText.innerText = "";
+
+    statusText.innerText =
+      "Choose your move";
+
+
+    newRoundBtn
+      .classList
+      .add("hidden");
+
+
+    const snapshot =
+      await get(
+        ref(db, "rooms/" + roomCode)
+      );
+
+
+    const data =
+      snapshot.val();
+
+
+    if (!data) return;
+
+
+    const nextRound =
+      Number(data.round || 1) + 1;
+
+
+    await update(
+      ref(db, "rooms/" + roomCode),
+      {
+        move1: "",
+        move2: "",
+        result: "",
+        finished: false,
+        round: nextRound
+      }
+    );
+
+
+    startTimer();
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Could not start new round"
+    );
+
+  }
+
+}
+
+
+/* TIMER */
+
+function startTimer() {
+
+  if (timer) return;
+
+  let seconds = 15;
+
+  timerText.innerText =
+    seconds;
+
+
+  timer = setInterval(
+    async () => {
+
+      seconds--;
+
+      timerText.innerText =
+        seconds;
+
+
+      if (seconds <= 0) {
+
+        stopTimer();
+
+
+        try {
+
+          const snapshot =
+            await get(
+              ref(db, "rooms/" + roomCode)
+            );
+
+
+          const data =
+            snapshot.val();
+
+
+          if (!data) return;
+
+
+          if (
+            !data.move1 &&
+            !data.move2 &&
+            !data.finished
+          ) {
+
+            await update(
+              ref(db, "rooms/" + roomCode),
+              {
+                result: "⏰ Time Up!",
+                finished: true
+              }
+            );
+
+          }
+
+        } catch (error) {
+
+          console.error(error);
+
+        }
+
+      }
+
+    },
+    1000
+  );
+
+}
+
+
+function stopTimer() {
+
+  if (timer) {
+
+    clearInterval(timer);
+
+    timer = null;
+
+  }
+
+}
+
+
+/* LEAVE ROOM */
+
+document
+  .getElementById("leaveBtn")
+  .addEventListener(
+    "click",
+    leaveRoom
+  );
+
+
+async function leaveRoom() {
+
+  if (
+    !confirm("Leave this room?")
+  ) {
+
+    return;
+
+  }
+
+
+  stopTimer();
+
+
+  try {
+
+    if (player === "player1") {
+
+      await remove(
+        ref(db, "rooms/" + roomCode)
+      );
+
+    } else {
+
+      await update(
+        ref(db, "rooms/" + roomCode),
+        {
+          player2: false,
+          player2Name: "",
+          move2: ""
+        }
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error(error);
+
+  }
+
+
+  location.reload();
+
+}
+
+</script>
+
+</body>
+</html>
