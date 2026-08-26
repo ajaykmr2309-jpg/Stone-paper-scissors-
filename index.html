@@ -1,18 +1,249 @@
-  <div id="game">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stone Paper Scissors</title>
 
-    <h2>Room: <span id="roomCode"></span></h2>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-    <p id="players">Waiting for player...</p>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #fff;
+      text-align: center;
+    }
 
-    <div id="status">
-      Choose your move:
+    .container {
+      width: 100%;
+      max-width: 480px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      border-radius: 20px;
+      padding: 25px 18px;
+      margin-top: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+    }
+
+    h2 {
+      margin-top: 5px;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px;
+      border: 0;
+      outline: 0;
+      border-radius: 10px;
+      font-size: 17px;
+      text-align: center;
+      margin: 10px 0;
+      text-transform: uppercase;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .main-btn {
+      width: 100%;
+      padding: 15px;
+      margin: 7px 0;
+      background: #22c55e;
+      color: white;
+      font-weight: bold;
+    }
+
+    .choice {
+      width: 85px;
+      height: 75px;
+      margin: 6px;
+      font-size: 40px;
+      background: white;
+    }
+
+    .choice:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    #game {
+      display: none;
+    }
+
+    .room {
+      margin: 15px 0;
+      font-size: 20px;
+    }
+
+    .score {
+      display: flex;
+      justify-content: space-around;
+      background: #334155;
+      border-radius: 14px;
+      padding: 15px;
+      margin: 15px 0;
+    }
+
+    .score strong {
+      font-size: 28px;
+    }
+
+    .timer {
+      font-size: 26px;
+      font-weight: bold;
+      margin: 15px;
+    }
+
+    .status {
+      min-height: 25px;
+      margin: 12px 0;
+    }
+
+    .result {
+      min-height: 60px;
+      margin: 15px 0;
+      font-size: 25px;
+      font-weight: bold;
+    }
+
+    .secondary {
+      background: #3b82f6;
+      color: white;
+      padding: 14px;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .danger {
+      background: #ef4444;
+      color: white;
+      padding: 12px 20px;
+      margin-top: 10px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .small {
+      color: #cbd5e1;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- LOBBY -->
+
+  <div id="lobby" class="card">
+
+    <h1>🪨 📄 ✂️</h1>
+    <h2>2 Player Online</h2>
+
+    <button class="main-btn" id="createBtn">
+      Create Room
+    </button>
+
+    <p>OR</p>
+
+    <input
+      id="roomInput"
+      maxlength="6"
+      placeholder="ROOM CODE"
+    >
+
+    <button class="main-btn" id="joinBtn">
+      Join Room
+    </button>
+
+    <p id="lobbyStatus" class="small"></p>
+
+  </div>
+
+
+  <!-- GAME -->
+
+  <div id="game" class="card">
+
+    <h1>🪨 📄 ✂️</h1>
+
+    <div class="room">
+      Room:
+      <strong id="roomCode"></strong>
     </div>
 
-    <button class="choice" onclick="makeMove('stone')">🪨</button>
-    <button class="choice" onclick="makeMove('paper')">📄</button>
-    <button class="choice" onclick="makeMove('scissors')">✂️</button>
+    <div class="score">
 
-    <div id="result"></div>
+      <div>
+        Player 1<br>
+        <strong id="score1">0</strong>
+      </div>
+
+      <div>
+        Player 2<br>
+        <strong id="score2">0</strong>
+      </div>
+
+    </div>
+
+    <div class="timer">
+      ⏱️ <span id="timer">15</span>
+    </div>
+
+    <div id="players" class="status">
+      Waiting for Player 2...
+    </div>
+
+    <div id="status" class="status">
+      Choose your move
+    </div>
+
+    <div>
+
+      <button class="choice" data-move="stone">🪨</button>
+
+      <button class="choice" data-move="paper">📄</button>
+
+      <button class="choice" data-move="scissors">✂️</button>
+
+    </div>
+
+    <div id="result" class="result"></div>
+
+    <button
+      id="newRoundBtn"
+      class="secondary hidden">
+      🔄 New Round
+    </button>
+
+    <br>
+
+    <button
+      id="leaveBtn"
+      class="danger">
+      🚪 Leave Room
+    </button>
 
   </div>
 
@@ -21,7 +252,8 @@
 
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
 import {
   getDatabase,
@@ -29,9 +261,13 @@ import {
   set,
   get,
   update,
+  remove,
   onValue
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+}
+from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
 
+
+/* FIREBASE */
 
 const firebaseConfig = {
   apiKey: "AIzaSyC5nCnRk8rHzEZX7BylT1T9T5lAWPkRQsjw",
@@ -40,168 +276,1470 @@ const firebaseConfig = {
   projectId: "stonepaperscissors-598d1",
   storageBucket: "stonepaperscissors-598d1.firebasestorage.app",
   messagingSenderId: "699484749817",
-  appId: "1:699484749817:web:861e86fe13c4bf94ef8728"
+  appId: "1:699484749817:web:861e86fe13c4bf94ef8728",
+  measurementId: "G-5HD3MDN5EC"
 };
 
 const app = initializeApp(firebaseConfig);
+
 const db = getDatabase(app);
+
+
+/* VARIABLES */
 
 let roomCode = "";
 let player = "";
+let timer = null;
+let myMove = "";
+let processingResult = false;
 
-function generateRoom() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
+
+/* ELEMENTS */
+
+const lobby = document.getElementById("lobby");
+const game = document.getElementById("game");
+
+const roomInput =
+  document.getElementById("roomInput");
+
+const lobbyStatus =
+  document.getElementById("lobbyStatus");
+
+const roomCodeText =
+  document.getElementById("roomCode");
+
+const playersText =
+  document.getElementById("players");
+
+const statusText =
+  document.getElementById("status");
+
+const resultText =
+  document.getElementById("result");
+
+const timerText =
+  document.getElementById("timer");
+
+const score1Text =
+  document.getElementById("score1");
+
+const score2Text =
+  document.getElementById("score2");
+
+const newRoundBtn =
+  document.getElementById("newRoundBtn");
+
+
+/* CREATE ROOM */
+
+document
+  .getElementById("createBtn")
+  .addEventListener("click", createRoom);
+
+
+async function createRoom() {
+
+  try {
+
+    roomCode =
+      Math.random()
+        .toString(36)
+        .substring(2, 8)
+        .toUpperCase();
+
+    player = "player1";
+
+    await set(
+      ref(db, "rooms/" + roomCode),
+      {
+        player1: true,
+        player2: false,
+
+        move1: "",
+        move2: "",
+
+        score1: 0,
+        score2: 0,
+
+        result: "",
+        round: 1,
+        finished: false
+      }
+    );
+
+    openGame();
+
+  } catch (error) {
+
+    alert("Could not create room");
+
+    console.error(error);
+
+  }
+
 }
 
 
-window.createRoom = async function() {
+/* JOIN ROOM */
 
-  roomCode = generateRoom();
-  player = "player1";
-
-  await set(ref(db, "rooms/" + roomCode), {
-    player1: true,
-    player2: false,
-    move1: "",
-    move2: "",
-    result: ""
-  });
-
-  openGame();
-
-  document.getElementById("lobbyStatus").innerText =
-    "Room created: " + roomCode;
-};
+document
+  .getElementById("joinBtn")
+  .addEventListener("click", joinRoom);
 
 
-window.joinRoom = async function() {
+async function joinRoom() {
 
-  roomCode =
-    document.getElementById("roomInput").value
-    .trim()
-    .toUpperCase();
+  try {
 
-  if (!roomCode) {
-    alert("Enter room code");
-    return;
-  }
+    roomCode =
+      roomInput.value
+        .trim()
+        .toUpperCase();
 
-  const roomRef = ref(db, "rooms/" + roomCode);
-  const snapshot = await get(roomRef);
+    if (roomCode.length !== 6) {
 
-  if (!snapshot.exists()) {
-    alert("Room not found");
-    return;
-  }
+      alert("Enter a valid 6 character room code");
 
-  const data = snapshot.val();
+      return;
 
-  if (data.player2) {
-    alert("Room is full");
-    return;
-  }
+    }
 
-  player = "player2";
+    const roomRef =
+      ref(db, "rooms/" + roomCode);
 
-  await update(roomRef, {
-    player2: true
-  });
+    const snapshot =
+      await get(roomRef);
 
-  openGame();
-};
+    if (!snapshot.exists()) {
 
+      alert("Room not found");
 
-function openGame() {
+      return;
 
-  document.getElementById("lobby").style.display = "none";
-
-  document.getElementById("game").style.display = "block";
-
-  document.getElementById("roomCode").innerText = roomCode;
-
-  listenRoom();
-}
-
-
-function listenRoom() {
-
-  const roomRef = ref(db, "rooms/" + roomCode);
-
-  onValue(roomRef, (snapshot) => {
+    }
 
     const data = snapshot.val();
 
-    if (!data) return;
+    if (data.player2 === true) {
 
-    if (data.player1 && data.player2) {
+      alert("Room is full");
 
-      document.getElementById("players").innerText =
-        "👥 2 Players Connected";
-
-    } else {
-
-      document.getElementById("players").innerText =
-        "⏳ Waiting for second player...";
-    }
-
-
-    if (data.move1 && data.move2) {
-
-      calculateWinner(data.move1, data.move2);
+      return;
 
     }
 
-  });
+    player = "player2";
+
+    await update(
+      roomRef,
+      {
+        player2: true
+      }
+    );
+
+    openGame();
+
+  } catch (error) {
+
+    alert("Could not join room");
+
+    console.error(error);
+
+  }
 
 }
 
 
-window.makeMove = async function(move) {
+/* OPEN GAME */
 
-  const roomRef = ref(db, "rooms/" + roomCode);
+function openGame() {
+
+  lobby.style.display = "none";
+
+  game.style.display = "block";
+
+  roomCodeText.innerText = roomCode;
+
+  listenRoom();
+
+}
+
+
+/* LISTEN */
+
+function listenRoom() {
+
+  const roomRef =
+    ref(db, "rooms/" + roomCode);
+
+  onValue(
+    roomRef,
+    snapshot => {
+
+      const data = snapshot.val();
+
+      if (!data) {
+
+        alert("Room closed");
+
+        location.reload();
+
+        return;
+
+      }
+
+
+      score1Text.innerText =
+        data.score1 || 0;
+
+      score2Text.innerText =
+        data.score2 || 0;
+
+
+      if (
+        data.player1 &&
+        data.player2
+      ) {
+
+        playersText.innerText =
+          "👥 2 Players Connected";
+
+      } else {
+
+        playersText.innerText =
+          "⏳ Waiting for Player 2...";
+
+      }
+
+
+      if (
+        data.move1 &&
+        data.move2 &&
+        !data.finished
+      ) {
+
+        calculateResult(data);
+
+      }
+
+
+      if (data.finished) {
+
+        resultText.innerText =
+          data.result || "";
+
+        newRoundBtn
+          .classList
+          .remove("hidden");
+
+        stopTimer();
+
+      }
+
+    }
+  );
+
+}
+
+
+/* CHOICE BUTTONS */
+
+document
+  .querySelectorAll(".choice")
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        makeMove(
+          button.dataset.move
+        );
+
+      }
+    );
+
+  });
+
+
+/* MAKE MOVE */
+
+async function makeMove(move) {
+
+  if (myMove) return;
+
+  myMove = move;
+
+  document
+    .querySelectorAll(".choice")
+    .forEach(button => {
+
+      button.disabled = true;
+
+    });
+
+
+  const roomRef =
+    ref(db, "rooms/" + roomCode);
+
+  const snapshot =
+    await get(roomRef);
+
+  const data = snapshot.val();
+
+  if (!data) return;
+
 
   if (player === "player1") {
 
-    await update(roomRef, {
-      move1: move
-    });
+    await update(
+      roomRef,
+      {
+        move1: move
+      }
+    );
 
   } else {
 
-    await update(roomRef, {
-      move2: move
-    });
+    await update(
+      roomRef,
+      {
+        move2: move
+      }
+    );
 
   }
 
-  document.getElementById("status").innerText =
+
+  statusText.innerText =
     "✅ Move selected. Waiting for opponent...";
-};
+
+}
 
 
-function calculateWinner(a, b) {
+/* CALCULATE RESULT */
+
+async function calculateResult(data) {
+
+  if (processingResult) return;
+
+  processingResult = true;
+
+  stopTimer();
 
   let result = "";
 
-  if (a === b) {
+  let score1 =
+    Number(data.score1 || 0);
+
+  let score2 =
+    Number(data.score2 || 0);
+
+
+  if (data.move1 === data.move2) {
 
     result = "🤝 Draw!";
 
-  } else if (
-    (a === "stone" && b === "scissors") ||
-    (a === "paper" && b === "stone") ||
-    (a === "scissors" && b === "paper")
+  }
+
+  else if (
+
+    data.move1 === "stone" &&
+    data.move2 === "scissors"
+
+    ||
+
+    data.move1 === "paper" &&
+    data.move2 === "stone"
+
+    ||
+
+    data.move1 === "scissors" &&
+    data.move2 === "paper"
+
   ) {
 
     result = "🏆 Player 1 Wins!";
 
-  } else {
-
-    result = "🏆 Player 2 Wins!";
+    score1++;
 
   }
 
-  document.getElementById("result").innerText = result;
+  else {
+
+    result = "🏆 Player 2 Wins!";
+
+    score2++;
+
+  }
+
+
+  await update(
+    ref(db, "rooms/" + roomCode),
+    {
+      score1: score1,
+      score2: score2,
+      result: result,
+      finished: true
+    }
+  );
+
+
+  resultText.innerText = result;
+
+  newRoundBtn
+    .classList
+    .remove("hidden");
+
+}
+
+
+/* NEW ROUND */
+
+newRoundBtn.addEventListener(
+  "click",
+  newRound
+);
+
+
+async function newRound() {
+
+  myMove = "";
+
+  processingResult = false;
+
+  stopTimer();
+
+  document
+    .querySelectorAll(".choice")
+    .forEach(button => {
+
+      button.disabled = false;
+
+    });
+
+
+  resultText.innerText = "";
+
+  statusText.innerText =
+    "Choose your move";
+
+
+  newRoundBtn
+    .classList
+    .add("hidden");
+
+
+  await update(
+    ref(db, "rooms/" + roomCode),
+    {
+
+      move1: "",
+      move2: "",
+
+      result: "",
+
+      finished: false
+
+    }
+  );
+
+
+  startTimer();
+
+}
+
+
+/* TIMER */
+
+function startTimer() {
+
+  stopTimer();
+
+  let seconds = 15;
+
+  timerText.innerText = seconds;
+
+
+  timer = setInterval(
+    async () => {
+
+      seconds--;
+
+      timerText.innerText =
+        seconds;
+
+
+      if (seconds <= 0) {
+
+        stopTimer();
+
+        const snapshot =
+          await get(
+            ref(db, "rooms/" + roomCode)
+          );
+
+        const data = snapshot.val();
+
+        if (!data) return;
+
+
+        if (
+          !data.move1 &&
+          !data.move2 &&
+          !data.finished
+        ) {
+
+          await update(
+            ref(db, "rooms/" + roomCode),
+            {
+              result: "⏰ Time Up!",
+              finished: true
+            }
+          );
+
+        }
+
+      }
+
+    },
+    1000
+  );
+
+}
+
+
+function stopTimer() {
+
+  if (timer) {
+
+    clearInterval(timer);
+
+    timer = null;
+
+  }
+
+}
+
+
+/* LEAVE ROOM */
+
+document
+  .getElementById("leaveBtn")
+  .addEventListener(
+    "click",
+    leaveRoom
+  );
+
+
+async function leaveRoom() {
+
+  if (
+    !confirm("Leave this room?")
+  ) {
+
+    return;
+
+  }
+
+
+  stopTimer();
+
+
+  if (player === "player1") {
+
+    await remove(
+      ref(db, "rooms/" + roomCode)
+    );
+
+  } else {
+
+    await update(
+      ref(db, "rooms/" + roomCode),
+      {
+        player2: false,
+        move2: ""
+      }
+    );
+
+  }
+
+
+  location.reload();
+
+}
+
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stone Paper Scissors</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #fff;
+      text-align: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      border-radius: 20px;
+      padding: 25px 18px;
+      margin-top: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+    }
+
+    h2 {
+      margin-top: 5px;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px;
+      border: 0;
+      outline: 0;
+      border-radius: 10px;
+      font-size: 17px;
+      text-align: center;
+      margin: 10px 0;
+      text-transform: uppercase;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .main-btn {
+      width: 100%;
+      padding: 15px;
+      margin: 7px 0;
+      background: #22c55e;
+      color: white;
+      font-weight: bold;
+    }
+
+    .choice {
+      width: 85px;
+      height: 75px;
+      margin: 6px;
+      font-size: 40px;
+      background: white;
+    }
+
+    .choice:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    #game {
+      display: none;
+    }
+
+    .room {
+      margin: 15px 0;
+      font-size: 20px;
+    }
+
+    .score {
+      display: flex;
+      justify-content: space-around;
+      background: #334155;
+      border-radius: 14px;
+      padding: 15px;
+      margin: 15px 0;
+    }
+
+    .score strong {
+      font-size: 28px;
+    }
+
+    .timer {
+      font-size: 26px;
+      font-weight: bold;
+      margin: 15px;
+    }
+
+    .status {
+      min-height: 25px;
+      margin: 12px 0;
+    }
+
+    .result {
+      min-height: 60px;
+      margin: 15px 0;
+      font-size: 25px;
+      font-weight: bold;
+    }
+
+    .secondary {
+      background: #3b82f6;
+      color: white;
+      padding: 14px;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .danger {
+      background: #ef4444;
+      color: white;
+      padding: 12px 20px;
+      margin-top: 10px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .small {
+      color: #cbd5e1;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- LOBBY -->
+
+  <div id="lobby" class="card">
+
+    <h1>🪨 📄 ✂️</h1>
+    <h2>2 Player Online</h2>
+
+    <button class="main-btn" id="createBtn">
+      Create Room
+    </button>
+
+    <p>OR</p>
+
+    <input
+      id="roomInput"
+      maxlength="6"
+      placeholder="ROOM CODE"
+    >
+
+    <button class="main-btn" id="joinBtn">
+      Join Room
+    </button>
+
+    <p id="lobbyStatus" class="small"></p>
+
+  </div>
+
+
+  <!-- GAME -->
+
+  <div id="game" class="card">
+
+    <h1>🪨 📄 ✂️</h1>
+
+    <div class="room">
+      Room:
+      <strong id="roomCode"></strong>
+    </div>
+
+    <div class="score">
+
+      <div>
+        Player 1<br>
+        <strong id="score1">0</strong>
+      </div>
+
+      <div>
+        Player 2<br>
+        <strong id="score2">0</strong>
+      </div>
+
+    </div>
+
+    <div class="timer">
+      ⏱️ <span id="timer">15</span>
+    </div>
+
+    <div id="players" class="status">
+      Waiting for Player 2...
+    </div>
+
+    <div id="status" class="status">
+      Choose your move
+    </div>
+
+    <div>
+
+      <button class="choice" data-move="stone">🪨</button>
+
+      <button class="choice" data-move="paper">📄</button>
+
+      <button class="choice" data-move="scissors">✂️</button>
+
+    </div>
+
+    <div id="result" class="result"></div>
+
+    <button
+      id="newRoundBtn"
+      class="secondary hidden">
+      🔄 New Round
+    </button>
+
+    <br>
+
+    <button
+      id="leaveBtn"
+      class="danger">
+      🚪 Leave Room
+    </button>
+
+  </div>
+
+</div>
+
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import {
+  getDatabase,
+  ref,
+  set,
+  get,
+  update,
+  remove,
+  onValue
+}
+from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+
+
+/* FIREBASE */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC5nCnRk8rHzEZX7BylT1T9T5lAWPkRQsjw",
+  authDomain: "stonepaperscissors-598d1.firebaseapp.com",
+  databaseURL: "https://stonepaperscissors-598d1-default-rtdb.firebaseio.com",
+  projectId: "stonepaperscissors-598d1",
+  storageBucket: "stonepaperscissors-598d1.firebasestorage.app",
+  messagingSenderId: "699484749817",
+  appId: "1:699484749817:web:861e86fe13c4bf94ef8728",
+  measurementId: "G-5HD3MDN5EC"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const db = getDatabase(app);
+
+
+/* VARIABLES */
+
+let roomCode = "";
+let player = "";
+let timer = null;
+let myMove = "";
+let processingResult = false;
+
+
+/* ELEMENTS */
+
+const lobby = document.getElementById("lobby");
+const game = document.getElementById("game");
+
+const roomInput =
+  document.getElementById("roomInput");
+
+const lobbyStatus =
+  document.getElementById("lobbyStatus");
+
+const roomCodeText =
+  document.getElementById("roomCode");
+
+const playersText =
+  document.getElementById("players");
+
+const statusText =
+  document.getElementById("status");
+
+const resultText =
+  document.getElementById("result");
+
+const timerText =
+  document.getElementById("timer");
+
+const score1Text =
+  document.getElementById("score1");
+
+const score2Text =
+  document.getElementById("score2");
+
+const newRoundBtn =
+  document.getElementById("newRoundBtn");
+
+
+/* CREATE ROOM */
+
+document
+  .getElementById("createBtn")
+  .addEventListener("click", createRoom);
+
+
+async function createRoom() {
+
+  try {
+
+    roomCode =
+      Math.random()
+        .toString(36)
+        .substring(2, 8)
+        .toUpperCase();
+
+    player = "player1";
+
+    await set(
+      ref(db, "rooms/" + roomCode),
+      {
+        player1: true,
+        player2: false,
+
+        move1: "",
+        move2: "",
+
+        score1: 0,
+        score2: 0,
+
+        result: "",
+        round: 1,
+        finished: false
+      }
+    );
+
+    openGame();
+
+  } catch (error) {
+
+    alert("Could not create room");
+
+    console.error(error);
+
+  }
+
+}
+
+
+/* JOIN ROOM */
+
+document
+  .getElementById("joinBtn")
+  .addEventListener("click", joinRoom);
+
+
+async function joinRoom() {
+
+  try {
+
+    roomCode =
+      roomInput.value
+        .trim()
+        .toUpperCase();
+
+    if (roomCode.length !== 6) {
+
+      alert("Enter a valid 6 character room code");
+
+      return;
+
+    }
+
+    const roomRef =
+      ref(db, "rooms/" + roomCode);
+
+    const snapshot =
+      await get(roomRef);
+
+    if (!snapshot.exists()) {
+
+      alert("Room not found");
+
+      return;
+
+    }
+
+    const data = snapshot.val();
+
+    if (data.player2 === true) {
+
+      alert("Room is full");
+
+      return;
+
+    }
+
+    player = "player2";
+
+    await update(
+      roomRef,
+      {
+        player2: true
+      }
+    );
+
+    openGame();
+
+  } catch (error) {
+
+    alert("Could not join room");
+
+    console.error(error);
+
+  }
+
+}
+
+
+/* OPEN GAME */
+
+function openGame() {
+
+  lobby.style.display = "none";
+
+  game.style.display = "block";
+
+  roomCodeText.innerText = roomCode;
+
+  listenRoom();
+
+}
+
+
+/* LISTEN */
+
+function listenRoom() {
+
+  const roomRef =
+    ref(db, "rooms/" + roomCode);
+
+  onValue(
+    roomRef,
+    snapshot => {
+
+      const data = snapshot.val();
+
+      if (!data) {
+
+        alert("Room closed");
+
+        location.reload();
+
+        return;
+
+      }
+
+
+      score1Text.innerText =
+        data.score1 || 0;
+
+      score2Text.innerText =
+        data.score2 || 0;
+
+
+      if (
+        data.player1 &&
+        data.player2
+      ) {
+
+        playersText.innerText =
+          "👥 2 Players Connected";
+
+      } else {
+
+        playersText.innerText =
+          "⏳ Waiting for Player 2...";
+
+      }
+
+
+      if (
+        data.move1 &&
+        data.move2 &&
+        !data.finished
+      ) {
+
+        calculateResult(data);
+
+      }
+
+
+      if (data.finished) {
+
+        resultText.innerText =
+          data.result || "";
+
+        newRoundBtn
+          .classList
+          .remove("hidden");
+
+        stopTimer();
+
+      }
+
+    }
+  );
+
+}
+
+
+/* CHOICE BUTTONS */
+
+document
+  .querySelectorAll(".choice")
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        makeMove(
+          button.dataset.move
+        );
+
+      }
+    );
+
+  });
+
+
+/* MAKE MOVE */
+
+async function makeMove(move) {
+
+  if (myMove) return;
+
+  myMove = move;
+
+  document
+    .querySelectorAll(".choice")
+    .forEach(button => {
+
+      button.disabled = true;
+
+    });
+
+
+  const roomRef =
+    ref(db, "rooms/" + roomCode);
+
+  const snapshot =
+    await get(roomRef);
+
+  const data = snapshot.val();
+
+  if (!data) return;
+
+
+  if (player === "player1") {
+
+    await update(
+      roomRef,
+      {
+        move1: move
+      }
+    );
+
+  } else {
+
+    await update(
+      roomRef,
+      {
+        move2: move
+      }
+    );
+
+  }
+
+
+  statusText.innerText =
+    "✅ Move selected. Waiting for opponent...";
+
+}
+
+
+/* CALCULATE RESULT */
+
+async function calculateResult(data) {
+
+  if (processingResult) return;
+
+  processingResult = true;
+
+  stopTimer();
+
+  let result = "";
+
+  let score1 =
+    Number(data.score1 || 0);
+
+  let score2 =
+    Number(data.score2 || 0);
+
+
+  if (data.move1 === data.move2) {
+
+    result = "🤝 Draw!";
+
+  }
+
+  else if (
+
+    data.move1 === "stone" &&
+    data.move2 === "scissors"
+
+    ||
+
+    data.move1 === "paper" &&
+    data.move2 === "stone"
+
+    ||
+
+    data.move1 === "scissors" &&
+    data.move2 === "paper"
+
+  ) {
+
+    result = "🏆 Player 1 Wins!";
+
+    score1++;
+
+  }
+
+  else {
+
+    result = "🏆 Player 2 Wins!";
+
+    score2++;
+
+  }
+
+
+  await update(
+    ref(db, "rooms/" + roomCode),
+    {
+      score1: score1,
+      score2: score2,
+      result: result,
+      finished: true
+    }
+  );
+
+
+  resultText.innerText = result;
+
+  newRoundBtn
+    .classList
+    .remove("hidden");
+
+}
+
+
+/* NEW ROUND */
+
+newRoundBtn.addEventListener(
+  "click",
+  newRound
+);
+
+
+async function newRound() {
+
+  myMove = "";
+
+  processingResult = false;
+
+  stopTimer();
+
+  document
+    .querySelectorAll(".choice")
+    .forEach(button => {
+
+      button.disabled = false;
+
+    });
+
+
+  resultText.innerText = "";
+
+  statusText.innerText =
+    "Choose your move";
+
+
+  newRoundBtn
+    .classList
+    .add("hidden");
+
+
+  await update(
+    ref(db, "rooms/" + roomCode),
+    {
+
+      move1: "",
+      move2: "",
+
+      result: "",
+
+      finished: false
+
+    }
+  );
+
+
+  startTimer();
+
+}
+
+
+/* TIMER */
+
+function startTimer() {
+
+  stopTimer();
+
+  let seconds = 15;
+
+  timerText.innerText = seconds;
+
+
+  timer = setInterval(
+    async () => {
+
+      seconds--;
+
+      timerText.innerText =
+        seconds;
+
+
+      if (seconds <= 0) {
+
+        stopTimer();
+
+        const snapshot =
+          await get(
+            ref(db, "rooms/" + roomCode)
+          );
+
+        const data = snapshot.val();
+
+        if (!data) return;
+
+
+        if (
+          !data.move1 &&
+          !data.move2 &&
+          !data.finished
+        ) {
+
+          await update(
+            ref(db, "rooms/" + roomCode),
+            {
+              result: "⏰ Time Up!",
+              finished: true
+            }
+          );
+
+        }
+
+      }
+
+    },
+    1000
+  );
+
+}
+
+
+function stopTimer() {
+
+  if (timer) {
+
+    clearInterval(timer);
+
+    timer = null;
+
+  }
+
+}
+
+
+/* LEAVE ROOM */
+
+document
+  .getElementById("leaveBtn")
+  .addEventListener(
+    "click",
+    leaveRoom
+  );
+
+
+async function leaveRoom() {
+
+  if (
+    !confirm("Leave this room?")
+  ) {
+
+    return;
+
+  }
+
+
+  stopTimer();
+
+
+  if (player === "player1") {
+
+    await remove(
+      ref(db, "rooms/" + roomCode)
+    );
+
+  } else {
+
+    await update(
+      ref(db, "rooms/" + roomCode),
+      {
+        player2: false,
+        move2: ""
+      }
+    );
+
+  }
+
+
+  location.reload();
 
 }
 
