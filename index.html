@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Stone Paper Scissors</title>
 
-  <!-- Telegram Mini App -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
@@ -26,14 +25,14 @@
       width: 100%;
       max-width: 480px;
       margin: auto;
-      padding: 20px;
+      padding: 15px;
     }
 
     .card {
       background: #1e293b;
       border-radius: 20px;
-      padding: 25px 18px;
-      margin-top: 30px;
+      padding: 22px 16px;
+      margin-top: 20px;
       box-shadow: 0 10px 30px rgba(0,0,0,.25);
     }
 
@@ -43,7 +42,18 @@
     }
 
     h2 {
-      margin-top: 5px;
+      margin: 8px 0;
+    }
+
+    .player-name {
+      font-size: 19px;
+      font-weight: bold;
+      margin: 12px 0;
+    }
+
+    .small {
+      color: #cbd5e1;
+      font-size: 14px;
     }
 
     input {
@@ -74,6 +84,31 @@
       font-weight: bold;
     }
 
+    .secondary {
+      background: #3b82f6;
+      color: white;
+      padding: 14px;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .danger {
+      background: #ef4444;
+      color: white;
+      padding: 12px 20px;
+      margin-top: 10px;
+    }
+
+    .home-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .home-buttons button {
+      flex: 1;
+    }
+
     .choice {
       width: 85px;
       height: 75px;
@@ -87,19 +122,23 @@
       cursor: not-allowed;
     }
 
-    #game {
+    #game,
+    #leaderboard,
+    #history {
       display: none;
-    }
-
-    .player-name {
-      font-size: 18px;
-      font-weight: bold;
-      margin: 10px 0;
     }
 
     .room {
       margin: 15px 0;
       font-size: 20px;
+    }
+
+    .room-code {
+      background: #334155;
+      padding: 8px 15px;
+      border-radius: 10px;
+      display: inline-block;
+      letter-spacing: 2px;
     }
 
     .score {
@@ -129,32 +168,20 @@
     .result {
       min-height: 60px;
       margin: 15px 0;
-      font-size: 25px;
+      font-size: 24px;
       font-weight: bold;
     }
 
-    .secondary {
-      background: #3b82f6;
-      color: white;
-      padding: 14px;
-      width: 100%;
-      margin-top: 8px;
-    }
-
-    .danger {
-      background: #ef4444;
-      color: white;
-      padding: 12px 20px;
-      margin-top: 10px;
+    .list-item {
+      background: #334155;
+      padding: 13px;
+      margin: 8px 0;
+      border-radius: 12px;
+      text-align: left;
     }
 
     .hidden {
       display: none !important;
-    }
-
-    .small {
-      color: #cbd5e1;
-      font-size: 14px;
     }
   </style>
 </head>
@@ -163,20 +190,26 @@
 
 <div class="container">
 
-  <!-- LOBBY -->
+  <!-- HOME -->
 
   <div id="lobby" class="card">
 
     <h1>🪨 📄 ✂️</h1>
 
-    <h2>2 Player Online</h2>
+    <h2>Stone Paper Scissors</h2>
 
     <div class="player-name" id="lobbyPlayer">
       Player
     </div>
 
+    <div class="small">
+      🎮 2 Player Online Game
+    </div>
+
+    <br>
+
     <button class="main-btn" id="createBtn">
-      Create Room
+      🎮 Create Room
     </button>
 
     <p>OR</p>
@@ -188,8 +221,24 @@
     >
 
     <button class="main-btn" id="joinBtn">
-      Join Room
+      🔗 Join Room
     </button>
+
+    <div class="home-buttons">
+
+      <button
+        class="secondary"
+        id="leaderboardBtn">
+        🏆 Leaderboard
+      </button>
+
+      <button
+        class="secondary"
+        id="historyBtn">
+        📜 History
+      </button>
+
+    </div>
 
     <p id="lobbyStatus" class="small"></p>
 
@@ -204,7 +253,7 @@
 
     <div class="room">
       Room:
-      <strong id="roomCode"></strong>
+      <div class="room-code" id="roomCode"></div>
     </div>
 
     <div class="score">
@@ -253,12 +302,52 @@
       🔄 New Round
     </button>
 
-    <br>
-
     <button
       id="leaveBtn"
       class="danger">
       🚪 Leave Room
+    </button>
+
+  </div>
+
+
+  <!-- LEADERBOARD -->
+
+  <div id="leaderboard" class="card">
+
+    <h1>🏆</h1>
+
+    <h2>Leaderboard</h2>
+
+    <div id="leaderboardList">
+      No matches played yet.
+    </div>
+
+    <button
+      class="secondary"
+      id="backFromLeaderboard">
+      ← Back
+    </button>
+
+  </div>
+
+
+  <!-- HISTORY -->
+
+  <div id="history" class="card">
+
+    <h1>📜</h1>
+
+    <h2>Match History</h2>
+
+    <div id="historyList">
+      No matches played yet.
+    </div>
+
+    <button
+      class="secondary"
+      id="backFromHistory">
+      ← Back
     </button>
 
   </div>
@@ -268,7 +357,9 @@
 
 <script type="module">
 
-/* FIREBASE */
+/* =========================
+   FIREBASE
+========================= */
 
 import { initializeApp }
 from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
@@ -286,58 +377,100 @@ from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC5nCnRk8rHzEZX7BylT1T9T5lAWPkRQsjw",
-  authDomain: "stonepaperscissors-598d1.firebaseapp.com",
-  databaseURL: "https://stonepaperscissors-598d1-default-rtdb.firebaseio.com",
-  projectId: "stonepaperscissors-598d1",
-  storageBucket: "stonepaperscissors-598d1.firebasestorage.app",
-  messagingSenderId: "699484749817",
-  appId: "1:699484749817:web:861e86fe13c4bf94ef8728",
-  measurementId: "G-5HD3MDN5EC"
+
+  apiKey:
+    "AIzaSyC5nCnRk8rHzEZX7BylT1T9T5lAWPkRQsjw",
+
+  authDomain:
+    "stonepaperscissors-598d1.firebaseapp.com",
+
+  databaseURL:
+    "https://stonepaperscissors-598d1-default-rtdb.firebaseio.com",
+
+  projectId:
+    "stonepaperscissors-598d1",
+
+  storageBucket:
+    "stonepaperscissors-598d1.firebasestorage.app",
+
+  messagingSenderId:
+    "699484749817",
+
+  appId:
+    "1:699484749817:web:861e86fe13c4bf94ef8728",
+
+  measurementId:
+    "G-5HD3MDN5EC"
 };
 
-const app = initializeApp(firebaseConfig);
 
-const db = getDatabase(app);
+const app =
+  initializeApp(firebaseConfig);
+
+const db =
+  getDatabase(app);
 
 
-/* TELEGRAM */
+/* =========================
+   TELEGRAM
+========================= */
 
-const tg = window.Telegram
-  ? window.Telegram.WebApp
-  : null;
+const tg =
+  window.Telegram &&
+  window.Telegram.WebApp
+    ? window.Telegram.WebApp
+    : null;
+
 
 if (tg) {
+
   tg.ready();
+
   tg.expand();
+
 }
 
 
 let telegramUser = null;
 
-if (tg && tg.initDataUnsafe) {
-  telegramUser = tg.initDataUnsafe.user || null;
+
+if (
+  tg &&
+  tg.initDataUnsafe &&
+  tg.initDataUnsafe.user
+) {
+
+  telegramUser =
+    tg.initDataUnsafe.user;
+
 }
 
 
 let myName = "Player";
 
+
 if (telegramUser) {
 
   if (telegramUser.username) {
 
-    myName = "@" + telegramUser.username;
+    myName =
+      "@" + telegramUser.username;
 
-  } else if (telegramUser.first_name) {
+  }
 
-    myName = telegramUser.first_name;
+  else if (telegramUser.first_name) {
+
+    myName =
+      telegramUser.first_name;
 
   }
 
 }
 
 
-/* VARIABLES */
+/* =========================
+   VARIABLES
+========================= */
 
 let roomCode = "";
 let player = "";
@@ -346,13 +479,21 @@ let myMove = "";
 let processingResult = false;
 
 
-/* ELEMENTS */
+/* =========================
+   ELEMENTS
+========================= */
 
 const lobby =
   document.getElementById("lobby");
 
 const game =
   document.getElementById("game");
+
+const leaderboard =
+  document.getElementById("leaderboard");
+
+const history =
+  document.getElementById("history");
 
 const roomInput =
   document.getElementById("roomInput");
@@ -391,23 +532,89 @@ const newRoundBtn =
   document.getElementById("newRoundBtn");
 
 
-lobbyPlayer.innerText = myName;
+lobbyPlayer.innerText =
+  myName;
 
 
-/* CREATE ROOM */
+/* =========================
+   SCREEN FUNCTIONS
+========================= */
+
+function showLobby() {
+
+  lobby.style.display = "block";
+
+  game.style.display = "none";
+
+  leaderboard.style.display = "none";
+
+  history.style.display = "none";
+
+}
+
+
+function showGame() {
+
+  lobby.style.display = "none";
+
+  game.style.display = "block";
+
+  leaderboard.style.display = "none";
+
+  history.style.display = "none";
+
+}
+
+
+function showLeaderboard() {
+
+  lobby.style.display = "none";
+
+  game.style.display = "none";
+
+  leaderboard.style.display = "block";
+
+  history.style.display = "none";
+
+  loadLeaderboard();
+
+}
+
+
+function showHistory() {
+
+  lobby.style.display = "none";
+
+  game.style.display = "none";
+
+  leaderboard.style.display = "none";
+
+  history.style.display = "block";
+
+  loadHistory();
+
+}
+
+
+/* =========================
+   CREATE ROOM
+========================= */
 
 document
   .getElementById("createBtn")
-  .addEventListener("click", createRoom);
+  .addEventListener(
+    "click",
+    createRoom
+  );
 
 
 async function createRoom() {
 
   try {
 
-    roomCode = "";
+    let newCode = "";
 
-    while (!roomCode) {
+    while (!newCode) {
 
       const code =
         Math.random()
@@ -421,37 +628,53 @@ async function createRoom() {
         );
 
       if (!existing.exists()) {
-        roomCode = code;
+
+        newCode = code;
+
       }
 
     }
+
+
+    roomCode = newCode;
 
     player = "player1";
 
     await set(
       ref(db, "rooms/" + roomCode),
       {
+
         player1: true,
+
         player2: false,
 
         player1Name: myName,
+
         player2Name: "",
 
         move1: "",
+
         move2: "",
 
         score1: 0,
+
         score2: 0,
 
         result: "",
+
         round: 1,
+
         finished: false
+
       }
     );
 
+
     openGame();
 
-  } catch (error) {
+  }
+
+  catch (error) {
 
     console.error(error);
 
@@ -464,11 +687,16 @@ async function createRoom() {
 }
 
 
-/* JOIN ROOM */
+/* =========================
+   JOIN ROOM
+========================= */
 
 document
   .getElementById("joinBtn")
-  .addEventListener("click", joinRoom);
+  .addEventListener(
+    "click",
+    joinRoom
+  );
 
 
 async function joinRoom() {
@@ -479,6 +707,7 @@ async function joinRoom() {
       roomInput.value
         .trim()
         .toUpperCase();
+
 
     if (roomCode.length !== 6) {
 
@@ -492,7 +721,10 @@ async function joinRoom() {
 
 
     const roomRef =
-      ref(db, "rooms/" + roomCode);
+      ref(
+        db,
+        "rooms/" + roomCode
+      );
 
 
     const snapshot =
@@ -527,15 +759,20 @@ async function joinRoom() {
     await update(
       roomRef,
       {
+
         player2: true,
+
         player2Name: myName
+
       }
     );
 
 
     openGame();
 
-  } catch (error) {
+  }
+
+  catch (error) {
 
     console.error(error);
 
@@ -548,13 +785,13 @@ async function joinRoom() {
 }
 
 
-/* OPEN GAME */
+/* =========================
+   OPEN GAME
+========================= */
 
 function openGame() {
 
-  lobby.style.display = "none";
-
-  game.style.display = "block";
+  showGame();
 
   roomCodeText.innerText =
     roomCode;
@@ -564,12 +801,17 @@ function openGame() {
 }
 
 
-/* LISTEN */
+/* =========================
+   LISTEN ROOM
+========================= */
 
 function listenRoom() {
 
   const roomRef =
-    ref(db, "rooms/" + roomCode);
+    ref(
+      db,
+      "rooms/" + roomCode
+    );
 
 
   onValue(
@@ -616,6 +858,7 @@ function listenRoom() {
         playersText.innerText =
           "👥 2 Players Connected";
 
+
         if (
           !data.move1 &&
           !data.move2 &&
@@ -629,7 +872,9 @@ function listenRoom() {
 
         }
 
-      } else {
+      }
+
+      else {
 
         playersText.innerText =
           "⏳ Waiting for Player 2...";
@@ -672,7 +917,9 @@ function listenRoom() {
 }
 
 
-/* CHOICES */
+/* =========================
+   CHOICE BUTTONS
+========================= */
 
 document
   .querySelectorAll(".choice")
@@ -692,7 +939,9 @@ document
   });
 
 
-/* MAKE MOVE */
+/* =========================
+   MAKE MOVE
+========================= */
 
 async function makeMove(move) {
 
@@ -700,7 +949,9 @@ async function makeMove(move) {
 
   if (!roomCode || !player) return;
 
+
   myMove = move;
+
 
   document
     .querySelectorAll(".choice")
@@ -712,7 +963,10 @@ async function makeMove(move) {
 
 
   const roomRef =
-    ref(db, "rooms/" + roomCode);
+    ref(
+      db,
+      "rooms/" + roomCode
+    );
 
 
   try {
@@ -726,7 +980,9 @@ async function makeMove(move) {
         }
       );
 
-    } else {
+    }
+
+    else {
 
       await update(
         roomRef,
@@ -741,7 +997,9 @@ async function makeMove(move) {
     statusText.innerText =
       "✅ Move selected. Waiting for opponent...";
 
-  } catch (error) {
+  }
+
+  catch (error) {
 
     console.error(error);
 
@@ -755,14 +1013,18 @@ async function makeMove(move) {
 
       });
 
-    alert("Could not save move");
+    alert(
+      "Could not save move"
+    );
 
   }
 
 }
 
 
-/* RESULT */
+/* =========================
+   CALCULATE RESULT
+========================= */
 
 async function calculateResult(data) {
 
@@ -786,7 +1048,8 @@ async function calculateResult(data) {
     data.move1 === data.move2
   ) {
 
-    result = "🤝 Draw!";
+    result =
+      "🤝 Draw!";
 
   }
 
@@ -837,16 +1100,32 @@ async function calculateResult(data) {
   try {
 
     await update(
-      ref(db, "rooms/" + roomCode),
+      ref(
+        db,
+        "rooms/" + roomCode
+      ),
       {
+
         score1: score1,
+
         score2: score2,
+
         result: result,
+
         finished: true
+
       }
     );
 
-  } catch (error) {
+
+    saveMatch(
+      data,
+      result
+    );
+
+  }
+
+  catch (error) {
 
     console.error(error);
 
@@ -863,7 +1142,9 @@ async function calculateResult(data) {
 }
 
 
-/* NEW ROUND */
+/* =========================
+   NEW ROUND
+========================= */
 
 newRoundBtn.addEventListener(
   "click",
@@ -904,7 +1185,10 @@ async function newRound() {
 
     const snapshot =
       await get(
-        ref(db, "rooms/" + roomCode)
+        ref(
+          db,
+          "rooms/" + roomCode
+        )
       );
 
 
@@ -920,20 +1204,31 @@ async function newRound() {
 
 
     await update(
-      ref(db, "rooms/" + roomCode),
+      ref(
+        db,
+        "rooms/" + roomCode
+      ),
       {
+
         move1: "",
+
         move2: "",
+
         result: "",
+
         finished: false,
+
         round: nextRound
+
       }
     );
 
 
     startTimer();
 
-  } catch (error) {
+  }
+
+  catch (error) {
 
     console.error(error);
 
@@ -946,7 +1241,9 @@ async function newRound() {
 }
 
 
-/* TIMER */
+/* =========================
+   TIMER
+========================= */
 
 function startTimer() {
 
@@ -958,62 +1255,76 @@ function startTimer() {
     seconds;
 
 
-  timer = setInterval(
-    async () => {
+  timer =
+    setInterval(
+      async () => {
 
-      seconds--;
+        seconds--;
 
-      timerText.innerText =
-        seconds;
-
-
-      if (seconds <= 0) {
-
-        stopTimer();
+        timerText.innerText =
+          seconds;
 
 
-        try {
+        if (seconds <= 0) {
 
-          const snapshot =
-            await get(
-              ref(db, "rooms/" + roomCode)
-            );
+          stopTimer();
 
 
-          const data =
-            snapshot.val();
+          try {
+
+            const snapshot =
+              await get(
+                ref(
+                  db,
+                  "rooms/" + roomCode
+                )
+              );
 
 
-          if (!data) return;
+            const data =
+              snapshot.val();
 
 
-          if (
-            !data.move1 &&
-            !data.move2 &&
-            !data.finished
-          ) {
+            if (!data) return;
 
-            await update(
-              ref(db, "rooms/" + roomCode),
-              {
-                result: "⏰ Time Up!",
-                finished: true
-              }
-            );
+
+            if (
+              !data.move1 &&
+              !data.move2 &&
+              !data.finished
+            ) {
+
+              await update(
+                ref(
+                  db,
+                  "rooms/" + roomCode
+                ),
+                {
+
+                  result:
+                    "⏰ Time Up!",
+
+                  finished:
+                    true
+
+                }
+              );
+
+            }
 
           }
 
-        } catch (error) {
+          catch (error) {
 
-          console.error(error);
+            console.error(error);
+
+          }
 
         }
 
-      }
-
-    },
-    1000
-  );
+      },
+      1000
+    );
 
 }
 
@@ -1031,7 +1342,9 @@ function stopTimer() {
 }
 
 
-/* LEAVE ROOM */
+/* =========================
+   LEAVE ROOM
+========================= */
 
 document
   .getElementById("leaveBtn")
@@ -1060,23 +1373,37 @@ async function leaveRoom() {
     if (player === "player1") {
 
       await remove(
-        ref(db, "rooms/" + roomCode)
+        ref(
+          db,
+          "rooms/" + roomCode
+        )
       );
 
-    } else {
+    }
+
+    else {
 
       await update(
-        ref(db, "rooms/" + roomCode),
+        ref(
+          db,
+          "rooms/" + roomCode
+        ),
         {
+
           player2: false,
+
           player2Name: "",
+
           move2: ""
+
         }
       );
 
     }
 
-  } catch (error) {
+  }
+
+  catch (error) {
 
     console.error(error);
 
@@ -1086,6 +1413,327 @@ async function leaveRoom() {
   location.reload();
 
 }
+
+
+/* =========================
+   LOCAL MATCH HISTORY
+========================= */
+
+function saveMatch(data, result) {
+
+  try {
+
+    const matches =
+      JSON.parse(
+        localStorage.getItem(
+          "sps_matches"
+        ) || "[]"
+      );
+
+
+    matches.unshift({
+
+      player1:
+        data.player1Name ||
+        "Player 1",
+
+      player2:
+        data.player2Name ||
+        "Player 2",
+
+      result:
+        result,
+
+      time:
+        new Date().toLocaleString()
+
+    });
+
+
+    localStorage.setItem(
+      "sps_matches",
+      JSON.stringify(
+        matches.slice(0, 50)
+      )
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+  }
+
+}
+
+
+/* =========================
+   HISTORY SCREEN
+========================= */
+
+function loadHistory() {
+
+  const list =
+    document.getElementById(
+      "historyList"
+    );
+
+
+  let matches = [];
+
+
+  try {
+
+    matches =
+      JSON.parse(
+        localStorage.getItem(
+          "sps_matches"
+        ) || "[]"
+      );
+
+  }
+
+  catch (error) {
+
+    matches = [];
+
+  }
+
+
+  if (!matches.length) {
+
+    list.innerHTML =
+      "No matches played yet.";
+
+    return;
+
+  }
+
+
+  list.innerHTML = "";
+
+
+  matches.forEach(match => {
+
+    const item =
+      document.createElement("div");
+
+    item.className =
+      "list-item";
+
+    item.innerHTML =
+      "<b>" +
+      escapeHTML(match.player1) +
+      "</b> vs <b>" +
+      escapeHTML(match.player2) +
+      "</b><br>" +
+      escapeHTML(match.result) +
+      "<br><span class='small'>" +
+      escapeHTML(match.time) +
+      "</span>";
+
+    list.appendChild(item);
+
+  });
+
+}
+
+
+/* =========================
+   LOCAL LEADERBOARD
+========================= */
+
+function loadLeaderboard() {
+
+  const list =
+    document.getElementById(
+      "leaderboardList"
+    );
+
+
+  let matches = [];
+
+
+  try {
+
+    matches =
+      JSON.parse(
+        localStorage.getItem(
+          "sps_matches"
+        ) || "[]"
+      );
+
+  }
+
+  catch (error) {
+
+    matches = [];
+
+  }
+
+
+  if (!matches.length) {
+
+    list.innerHTML =
+      "No matches played yet.";
+
+    return;
+
+  }
+
+
+  const scores = {};
+
+
+  matches.forEach(match => {
+
+    const text =
+      match.result || "";
+
+
+    if (
+      text.includes(
+        match.player1
+      )
+    ) {
+
+      scores[match.player1] =
+        (scores[match.player1] || 0) + 1;
+
+    }
+
+
+    if (
+      text.includes(
+        match.player2
+      )
+    ) {
+
+      scores[match.player2] =
+        (scores[match.player2] || 0) + 1;
+
+    }
+
+  });
+
+
+  const sorted =
+    Object.entries(scores)
+      .sort(
+        (a, b) => b[1] - a[1]
+      );
+
+
+  if (!sorted.length) {
+
+    list.innerHTML =
+      "No wins yet.";
+
+    return;
+
+  }
+
+
+  list.innerHTML = "";
+
+
+  sorted.forEach(
+    ([name, wins], index) => {
+
+      const item =
+        document.createElement("div");
+
+      item.className =
+        "list-item";
+
+      item.innerHTML =
+        "<b>#" +
+        (index + 1) +
+        "</b> " +
+        escapeHTML(name) +
+        " — 🏆 " +
+        wins +
+        " wins";
+
+      list.appendChild(item);
+
+    }
+  );
+
+}
+
+
+/* =========================
+   SAFE TEXT
+========================= */
+
+function escapeHTML(value) {
+
+  return String(value)
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+
+/* =========================
+   NAVIGATION
+========================= */
+
+document
+  .getElementById("leaderboardBtn")
+  .addEventListener(
+    "click",
+    showLeaderboard
+  );
+
+
+document
+  .getElementById("historyBtn")
+  .addEventListener(
+    "click",
+    showHistory
+  );
+
+
+document
+  .getElementById("backFromLeaderboard")
+  .addEventListener(
+    "click",
+    showLobby
+  );
+
+
+document
+  .getElementById("backFromHistory")
+  .addEventListener(
+    "click",
+    showLobby
+  );
+
+
+/* START */
+
+showLobby();
 
 </script>
 
