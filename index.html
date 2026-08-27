@@ -3,1092 +3,968 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stone Paper Scissors</title>
+<title>RPS Arena</title>
 
 <style>
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
 
 body{
-margin:0;
-min-height:100vh;
-font-family:Arial,sans-serif;
-background:#0f172a;
-color:white;
-text-align:center;
+  font-family:Arial,Helvetica,sans-serif;
+  background:
+    radial-gradient(circle at top,#252b55 0%,#11142b 38%,#080a17 100%);
+  color:#fff;
+  min-height:100vh;
 }
 
-.container{
-width:100%;
-max-width:480px;
-margin:auto;
-padding:15px;
+.app{
+  width:100%;
+  max-width:480px;
+  margin:auto;
+  min-height:100vh;
+  padding:18px 15px 35px;
 }
 
-.card{
-background:#1e293b;
-border-radius:20px;
-padding:25px 18px;
-margin-top:20px;
-box-shadow:0 10px 30px rgba(0,0,0,.25);
+/* HEADER */
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:18px;
 }
 
-h1{
-margin:0 0 10px;
-font-size:34px;
+.logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
 
-h2{
-margin:8px 0 15px;
+.logo-icon{
+  width:43px;
+  height:43px;
+  border-radius:14px;
+  background:linear-gradient(135deg,#7c5cff,#4d8dff);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:23px;
+  box-shadow:0 8px 25px rgba(92,91,255,.35);
 }
 
-input{
-width:100%;
-padding:15px;
-border:0;
-outline:0;
-border-radius:10px;
-font-size:17px;
-text-align:center;
-margin:10px 0;
-text-transform:uppercase;
+.logo h1{
+  font-size:20px;
 }
 
-button{
-border:0;
-border-radius:12px;
-cursor:pointer;
-font-size:16px;
+.logo span{
+  display:block;
+  color:#9298b8;
+  font-size:11px;
+  margin-top:2px;
 }
 
-.main-btn{
-width:100%;
-padding:15px;
-margin:7px 0;
-background:#22c55e;
-color:white;
-font-weight:bold;
+.profile{
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#ffbd59,#ff6b6b);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:20px;
 }
 
-.choice{
-width:85px;
-height:75px;
-margin:6px;
-font-size:40px;
-background:white;
+/* BALANCE */
+
+.balance{
+  background:linear-gradient(135deg,rgba(124,92,255,.22),rgba(61,132,255,.10));
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:22px;
+  padding:18px;
+  margin-bottom:15px;
+  box-shadow:0 12px 35px rgba(0,0,0,.22);
 }
 
-.choice:disabled{
-opacity:.4;
-cursor:not-allowed;
+.balance-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 
-.secondary{
-background:#3b82f6;
-color:white;
-padding:14px;
-width:100%;
-margin-top:10px;
+.small-title{
+  color:#9ca3c4;
+  font-size:12px;
 }
 
-.danger{
-background:#ef4444;
-color:white;
-padding:12px 20px;
-margin-top:10px;
+.coins{
+  font-size:28px;
+  font-weight:800;
+  margin-top:5px;
 }
 
-#game{
-display:none;
+.coin-icon{
+  display:inline-flex;
+  width:27px;
+  height:27px;
+  border-radius:50%;
+  background:#ffd45c;
+  color:#754e00;
+  align-items:center;
+  justify-content:center;
+  font-size:15px;
+  margin-right:5px;
 }
 
-.room{
-margin:15px 0;
-font-size:20px;
+.demo{
+  color:#78e5b0;
+  font-size:10px;
+  background:rgba(54,211,153,.1);
+  border:1px solid rgba(54,211,153,.2);
+  padding:6px 9px;
+  border-radius:20px;
 }
 
-.room-code{
-background:#334155;
-padding:8px 15px;
-border-radius:10px;
-display:inline-block;
-letter-spacing:2px;
+/* STATS */
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:9px;
+  margin-bottom:17px;
 }
 
-.score{
-display:flex;
-justify-content:space-around;
-background:#334155;
-border-radius:14px;
-padding:15px;
-margin:15px 0;
+.stat{
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:15px;
+  padding:12px 8px;
+  text-align:center;
 }
 
-.score strong{
-font-size:28px;
+.stat-number{
+  font-size:18px;
+  font-weight:800;
 }
 
-.timer{
-font-size:32px;
-font-weight:bold;
-margin:18px;
+.stat-label{
+  color:#858ba9;
+  font-size:10px;
+  margin-top:4px;
 }
 
-.timer.warning{
-animation:blink .7s infinite;
+/* GAME CARD */
+
+.game-card{
+  background:rgba(17,20,43,.85);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:25px;
+  padding:17px;
+  box-shadow:0 18px 45px rgba(0,0,0,.28);
+  margin-bottom:18px;
 }
 
-@keyframes blink{
-50%{opacity:.45}
+.round-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:15px;
+}
+
+.round{
+  font-size:13px;
+  color:#9ca3c4;
+}
+
+.round strong{
+  color:white;
 }
 
 .status{
-min-height:25px;
-margin:12px 0;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:11px;
+  color:#78e5b0;
 }
+
+.dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#48e29b;
+  box-shadow:0 0 10px #48e29b;
+}
+
+/* TIMER */
+
+.timer-box{
+  text-align:center;
+  padding:13px 0 17px;
+}
+
+.timer-label{
+  color:#858ba9;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:1.5px;
+}
+
+.timer{
+  font-size:48px;
+  font-weight:900;
+  line-height:1.05;
+  margin-top:3px;
+  background:linear-gradient(180deg,#fff,#aab6ff);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.timer.warning{
+  background:linear-gradient(180deg,#fff,#ff7979);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+/* PLAYERS */
+
+.players{
+  display:grid;
+  grid-template-columns:1fr 55px 1fr;
+  align-items:center;
+  gap:8px;
+  margin-bottom:18px;
+}
+
+.player{
+  text-align:center;
+}
+
+.avatar{
+  width:62px;
+  height:62px;
+  border-radius:19px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:28px;
+  margin:auto;
+  background:linear-gradient(135deg,#262d59,#171a35);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+.player-name{
+  font-size:12px;
+  margin-top:8px;
+  font-weight:700;
+}
+
+.player-role{
+  color:#747b9d;
+  font-size:9px;
+  margin-top:3px;
+}
+
+.vs{
+  width:45px;
+  height:45px;
+  border-radius:50%;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.08);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  font-weight:900;
+  color:#9ba4d7;
+}
+
+/* CHOICES */
+
+.choose-title{
+  text-align:center;
+  color:#9ba1bd;
+  font-size:11px;
+  margin-bottom:10px;
+}
+
+.choices{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:9px;
+}
+
+.choice{
+  border:none;
+  color:#fff;
+  border-radius:18px;
+  padding:13px 5px;
+  background:linear-gradient(145deg,#20254a,#15182f);
+  border:1px solid rgba(255,255,255,.08);
+  cursor:pointer;
+  transition:.18s;
+}
+
+.choice:active{
+  transform:scale(.93);
+}
+
+.choice.selected{
+  border-color:#806cff;
+  background:linear-gradient(145deg,#39316d,#20204b);
+  box-shadow:0 0 25px rgba(124,92,255,.25);
+}
+
+.choice-icon{
+  font-size:30px;
+}
+
+.choice-name{
+  display:block;
+  font-size:11px;
+  font-weight:700;
+  margin-top:6px;
+}
+
+/* RESULT */
 
 .result{
-min-height:60px;
-margin:15px 0;
-font-size:24px;
-font-weight:bold;
+  display:none;
+  text-align:center;
+  margin-top:14px;
+  border-radius:18px;
+  padding:14px;
+  background:rgba(255,255,255,.05);
 }
 
-.hidden{
-display:none!important;
+.result.show{
+  display:block;
+  animation:pop .3s ease;
 }
 
-.small{
-color:#cbd5e1;
-font-size:14px;
+.result-title{
+  font-size:22px;
+  font-weight:900;
+}
+
+.result-sub{
+  color:#9da4c3;
+  font-size:11px;
+  margin-top:5px;
+}
+
+@keyframes pop{
+  from{transform:scale(.8);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+
+/* BUTTON */
+
+.new-round{
+  width:100%;
+  border:none;
+  border-radius:15px;
+  padding:14px;
+  margin-top:11px;
+  background:linear-gradient(135deg,#7658ff,#497fff);
+  color:white;
+  font-weight:800;
+  font-size:13px;
+  cursor:pointer;
+  box-shadow:0 9px 25px rgba(82,91,255,.25);
+  display:none;
+}
+
+.new-round.show{
+  display:block;
+}
+
+/* HISTORY */
+
+.section-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.section-title h2{
+  font-size:17px;
+}
+
+.section-title span{
+  color:#777e9f;
+  font-size:10px;
+}
+
+.history{
+  background:rgba(17,20,43,.72);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:21px;
+  overflow:hidden;
+}
+
+.history-empty{
+  padding:22px;
+  text-align:center;
+  color:#6e7594;
+  font-size:12px;
+}
+
+.history-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:13px 14px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+
+.history-item:last-child{
+  border-bottom:none;
+}
+
+.history-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.history-icon{
+  width:36px;
+  height:36px;
+  border-radius:11px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,.06);
+  font-size:18px;
+}
+
+.history-round{
+  font-size:11px;
+  font-weight:700;
+}
+
+.history-time{
+  color:#676e8c;
+  font-size:9px;
+  margin-top:3px;
+}
+
+.history-result{
+  font-size:11px;
+  font-weight:800;
+}
+
+.win{
+  color:#53dfa0;
+}
+
+.loss{
+  color:#ff707a;
+}
+
+.draw{
+  color:#ffd166;
+}
+
+/* FOOTER */
+
+.footer{
+  text-align:center;
+  color:#555c79;
+  font-size:9px;
+  margin-top:22px;
+}
+
+/* MOBILE */
+
+@media(max-width:350px){
+  .timer{font-size:42px}
+  .avatar{width:55px;height:55px}
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="app">
 
-<!-- LOBBY -->
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">🎮</div>
+      <div>
+        <h1>RPS ARENA</h1>
+        <span>Stone • Paper • Scissors</span>
+      </div>
+    </div>
 
-<div id="lobby" class="card">
+    <div class="profile">👤</div>
+  </div>
 
-<h1>🪨 📄 ✂️</h1>
+  <!-- BALANCE -->
+  <div class="balance">
+    <div class="balance-top">
+      <div>
+        <div class="small-title">Demo Balance</div>
+        <div class="coins">
+          <span class="coin-icon">C</span>
+          <span id="balance">1000</span>
+        </div>
+      </div>
 
-<h2>Stone Paper Scissors</h2>
+      <div class="demo">PLAY MONEY</div>
+    </div>
+  </div>
 
-<p class="small">🎮 2 Player Online</p>
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-number" id="games">0</div>
+      <div class="stat-label">GAMES</div>
+    </div>
 
-<button id="createBtn" class="main-btn">
-🎮 Create Room
-</button>
+    <div class="stat">
+      <div class="stat-number" id="wins">0</div>
+      <div class="stat-label">WINS</div>
+    </div>
 
-<p>OR</p>
+    <div class="stat">
+      <div class="stat-number" id="winrate">0%</div>
+      <div class="stat-label">WIN RATE</div>
+    </div>
+  </div>
 
-<input
-id="roomInput"
-maxlength="6"
-placeholder="ROOM CODE">
+  <!-- GAME -->
+  <div class="game-card">
 
-<button id="joinBtn" class="main-btn">
-🔗 Join Room
-</button>
+    <div class="round-row">
+      <div class="round">ROUND <strong id="round">1</strong></div>
 
-<p id="lobbyStatus" class="small"></p>
+      <div class="status">
+        <span class="dot"></span>
+        MATCH LIVE
+      </div>
+    </div>
+
+    <!-- TIMER -->
+    <div class="timer-box">
+      <div class="timer-label">Choose your move</div>
+      <div class="timer" id="timer">60</div>
+    </div>
+
+    <!-- PLAYERS -->
+    <div class="players">
+
+      <div class="player">
+        <div class="avatar" id="playerAvatar">👤</div>
+        <div class="player-name">YOU</div>
+        <div class="player-role">PLAYER</div>
+      </div>
+
+      <div class="vs">VS</div>
+
+      <div class="player">
+        <div class="avatar" id="opponentAvatar">🤖</div>
+        <div class="player-name">RIVAL</div>
+        <div class="player-role">BOT</div>
+      </div>
+
+    </div>
+
+    <div class="choose-title">
+      SELECT YOUR MOVE
+    </div>
+
+    <!-- CHOICES -->
+    <div class="choices">
+
+      <button class="choice" onclick="play('stone',this)">
+        <div class="choice-icon">🪨</div>
+        <span class="choice-name">STONE</span>
+      </button>
+
+      <button class="choice" onclick="play('paper',this)">
+        <div class="choice-icon">📄</div>
+        <span class="choice-name">PAPER</span>
+      </button>
+
+      <button class="choice" onclick="play('scissors',this)">
+        <div class="choice-icon">✂️</div>
+        <span class="choice-name">SCISSORS</span>
+      </button>
+
+    </div>
+
+    <!-- RESULT -->
+    <div class="result" id="result">
+      <div class="result-title" id="resultTitle"></div>
+      <div class="result-sub" id="resultSub"></div>
+    </div>
+
+    <button class="new-round" id="newRound" onclick="startNewRound()">
+      ⚡ START NEW ROUND
+    </button>
+
+  </div>
+
+  <!-- HISTORY -->
+  <div class="section-title">
+    <h2>Game History</h2>
+    <span>LAST 10 GAMES</span>
+  </div>
+
+  <div class="history" id="history">
+    <div class="history-empty" id="empty">
+      No games played yet.<br>
+      Your results will appear here.
+    </div>
+  </div>
+
+  <div class="footer">
+    RPS Arena • Demo Game • Play for fun
+  </div>
 
 </div>
 
+<script>
 
-<!-- GAME -->
+let timeLeft = 60;
+let timerInterval;
+let roundNumber = 1;
 
-<div id="game" class="card">
+let balance = 1000;
+let games = 0;
+let wins = 0;
 
-<h1>🪨 📄 ✂️</h1>
+let gameOver = false;
 
-<div class="room">
-Room:
-<div class="room-code" id="roomCode"></div>
-</div>
+const choices = ["stone","paper","scissors"];
 
-<div class="score">
-
-<div>
-<span id="player1Name">Player 1</span>
-<br>
-<strong id="score1">0</strong>
-</div>
-
-<div>
-<span id="player2Name">Player 2</span>
-<br>
-<strong id="score2">0</strong>
-</div>
-
-</div>
-
-
-<!-- EXACT 60 SECOND TIMER -->
-
-<div class="timer" id="timerBox">
-⏱️ <span id="timer">60</span>
-</div>
-
-
-<div id="players" class="status">
-⏳ Waiting for Player 2...
-</div>
-
-<div id="status" class="status">
-Waiting for players...
-</div>
-
-
-<div>
-
-<button class="choice" data-move="stone">
-🪨
-</button>
-
-<button class="choice" data-move="paper">
-📄
-</button>
-
-<button class="choice" data-move="scissors">
-✂️
-</button>
-
-</div>
-
-
-<div id="result" class="result"></div>
-
-
-<button
-id="newRoundBtn"
-class="secondary hidden">
-🔄 New Round
-</button>
-
-
-<button
-id="leaveBtn"
-class="danger">
-🚪 Leave Room
-</button>
-
-</div>
-
-</div>
-
-
-<script type="module">
-
-import {initializeApp}
-from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-
-import {
-getDatabase,
-ref,
-set,
-get,
-update,
-remove,
-onValue
-}
-from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
-
-
-/* FIREBASE */
-
-const firebaseConfig={
-
-apiKey:"AIzaSyC5nCnRk8rHzEZX7BylT1T9T5lAWPkRQsjw",
-
-authDomain:
-"stonepaperscissors-598d1.firebaseapp.com",
-
-databaseURL:
-"https://stonepaperscissors-598d1-default-rtdb.firebaseio.com",
-
-projectId:
-"stonepaperscissors-598d1",
-
-storageBucket:
-"stonepaperscissors-598d1.firebasestorage.app",
-
-messagingSenderId:
-"699484749817",
-
-appId:
-"1:699484749817:web:861e86fe13c4bf94ef8728",
-
-measurementId:
-"G-5HD3MDN5EC"
-
+const icons = {
+  stone:"🪨",
+  paper:"📄",
+  scissors:"✂️"
 };
 
-
-const app=initializeApp(firebaseConfig);
-
-const db=getDatabase(app);
-
-
-/* VARIABLES */
-
-let roomCode="";
-let player="";
-let myMove="";
-let timer=null;
-let processingResult=false;
-
-
-/* ELEMENTS */
-
-const lobby=
-document.getElementById("lobby");
-
-const game=
-document.getElementById("game");
-
-const roomInput=
-document.getElementById("roomInput");
-
-const roomCodeText=
-document.getElementById("roomCode");
-
-const playersText=
-document.getElementById("players");
-
-const statusText=
-document.getElementById("status");
-
-const resultText=
-document.getElementById("result");
-
-const timerText=
-document.getElementById("timer");
-
-const timerBox=
-document.getElementById("timerBox");
-
-const score1Text=
-document.getElementById("score1");
-
-const score2Text=
-document.getElementById("score2");
-
-const player1NameText=
-document.getElementById("player1Name");
-
-const player2NameText=
-document.getElementById("player2Name");
-
-const newRoundBtn=
-document.getElementById("newRoundBtn");
-
-
-/* PLAYER NAME */
-
-let myName="Player";
-
-const tg=
-window.Telegram &&
-window.Telegram.WebApp
-? window.Telegram.WebApp
-: null;
-
-if(tg){
-
-tg.ready();
-tg.expand();
-
-if(
-tg.initDataUnsafe &&
-tg.initDataUnsafe.user
-){
-
-const user=
-tg.initDataUnsafe.user;
-
-if(user.username){
-
-myName="@"+user.username;
-
-}
-else if(user.first_name){
-
-myName=user.first_name;
-
-}
-
-}
-
-}
-
-
-/* CREATE ROOM */
-
-document
-.getElementById("createBtn")
-.addEventListener(
-"click",
-createRoom
-);
-
-
-async function createRoom(){
-
-try{
-
-roomCode=
-Math.random()
-.toString(36)
-.substring(2,8)
-.toUpperCase();
-
-player="player1";
-
-await set(
-ref(db,"rooms/"+roomCode),
-{
-
-player1:true,
-player2:false,
-
-player1Name:myName,
-player2Name:"",
-
-move1:"",
-move2:"",
-
-score1:0,
-score2:0,
-
-result:"",
-finished:false,
-
-round:1
-
-}
-);
-
-openGame();
-
-}
-catch(error){
-
-console.error(error);
-
-alert(
-"Could not create room"
-);
-
-}
-
-}
-
-
-/* JOIN ROOM */
-
-document
-.getElementById("joinBtn")
-.addEventListener(
-"click",
-joinRoom
-);
-
-
-async function joinRoom(){
-
-try{
-
-roomCode=
-roomInput.value
-.trim()
-.toUpperCase();
-
-if(roomCode.length!==6){
-
-alert(
-"Enter valid 6 character room code"
-);
-
-return;
-
-}
-
-const roomRef=
-ref(db,"rooms/"+roomCode);
-
-const snapshot=
-await get(roomRef);
-
-if(!snapshot.exists()){
-
-alert("Room not found");
-
-return;
-
-}
-
-const data=snapshot.val();
-
-if(data.player2){
-
-alert("Room is full");
-
-return;
-
-}
-
-player="player2";
-
-await update(
-roomRef,
-{
-
-player2:true,
-player2Name:myName
-
-}
-);
-
-openGame();
-
-}
-catch(error){
-
-console.error(error);
-
-alert(
-"Could not join room"
-);
-
-}
-
-}
-
-
-/* OPEN GAME */
-
-function openGame(){
-
-lobby.style.display="none";
-
-game.style.display="block";
-
-roomCodeText.innerText=
-roomCode;
-
-listenRoom();
-
-}
-
-
-/* LISTEN ROOM */
-
-function listenRoom(){
-
-const roomRef=
-ref(db,"rooms/"+roomCode);
-
-onValue(
-roomRef,
-snapshot=>{
-
-const data=snapshot.val();
-
-if(!data){
-
-alert("Room closed");
-
-location.reload();
-
-return;
-
-}
-
-
-score1Text.innerText=
-data.score1||0;
-
-score2Text.innerText=
-data.score2||0;
-
-
-player1NameText.innerText=
-data.player1Name||
-"Player 1";
-
-player2NameText.innerText=
-data.player2Name||
-"Player 2";
-
-
-if(
-data.player1 &&
-data.player2
-){
-
-playersText.innerText=
-"👥 2 Players Connected";
-
-
-if(
-!data.move1 &&
-!data.move2 &&
-!data.finished
-){
-
-statusText.innerText=
-"Choose your move";
-
-startTimer();
-
-}
-
-}
-else{
-
-playersText.innerText=
-"⏳ Waiting for Player 2...";
-
-statusText.innerText=
-"Waiting for Player 2...";
-
-stopTimer();
-
-}
-
-
-if(
-data.move1 &&
-data.move2 &&
-!data.finished
-){
-
-calculateResult(data);
-
-}
-
-
-if(data.finished){
-
-resultText.innerText=
-data.result||"";
-
-newRoundBtn
-.classList
-.remove("hidden");
-
-stopTimer();
-
-}
-
-}
-);
-
-}
-
-
-/* CHOICE BUTTONS */
-
-document
-.querySelectorAll(".choice")
-.forEach(button=>{
-
-button.addEventListener(
-"click",
-()=>{
-
-makeMove(
-button.dataset.move
-);
-
-}
-);
-
-});
-
-
-/* MAKE MOVE */
-
-async function makeMove(move){
-
-if(myMove) return;
-
-myMove=move;
-
-document
-.querySelectorAll(".choice")
-.forEach(button=>{
-
-button.disabled=true;
-
-});
-
-
-try{
-
-const roomRef=
-ref(db,"rooms/"+roomCode);
-
-if(player==="player1"){
-
-await update(
-roomRef,
-{move1:move}
-);
-
-}
-else{
-
-await update(
-roomRef,
-{move2:move}
-);
-
-}
-
-statusText.innerText=
-"✅ Move selected. Waiting for opponent...";
-
-}
-catch(error){
-
-console.error(error);
-
-myMove="";
-
-document
-.querySelectorAll(".choice")
-.forEach(button=>{
-
-button.disabled=false;
-
-});
-
-}
-
-}
-
-
-/* RESULT */
-
-async function calculateResult(data){
-
-if(processingResult) return;
-
-processingResult=true;
-
-stopTimer();
-
-let score1=
-Number(data.score1||0);
-
-let score2=
-Number(data.score2||0);
-
-let result="";
-
-
-if(data.move1===data.move2){
-
-result="🤝 Draw!";
-
-}
-
-else if(
-
-(
-data.move1==="stone" &&
-data.move2==="scissors"
-)
-
-||
-
-(
-data.move1==="paper" &&
-data.move2==="stone"
-)
-
-||
-
-(
-data.move1==="scissors" &&
-data.move2==="paper"
-)
-
-){
-
-score1++;
-
-result=
-"🏆 "+
-(data.player1Name||"Player 1")+
-" Wins!";
-
-}
-
-else{
-
-score2++;
-
-result=
-"🏆 "+
-(data.player2Name||"Player 2")+
-" Wins!";
-
-}
-
-
-await update(
-ref(db,"rooms/"+roomCode),
-{
-
-score1:score1,
-score2:score2,
-result:result,
-finished:true
-
-}
-);
-
-}
-
-
-/* NEW ROUND */
-
-newRoundBtn.addEventListener(
-"click",
-newRound
-);
-
-
-async function newRound(){
-
-myMove="";
-
-processingResult=false;
-
-stopTimer();
-
-document
-.querySelectorAll(".choice")
-.forEach(button=>{
-
-button.disabled=false;
-
-});
-
-resultText.innerText="";
-
-statusText.innerText=
-"Choose your move";
-
-newRoundBtn
-.classList
-.add("hidden");
-
-
-await update(
-ref(db,"rooms/"+roomCode),
-{
-
-move1:"",
-move2:"",
-result:"",
-finished:false
-
-}
-);
-
-
-/*
-IMPORTANT:
-Timer starts from EXACTLY 60
-*/
-
-startTimer();
-
-}
-
-
-/* =================================
-   60 SECOND COUNTDOWN
-   60 → 59 → 58 → ... → 0
-================================= */
+const names = {
+  stone:"STONE",
+  paper:"PAPER",
+  scissors:"SCISSORS"
+};
+
+/* TIMER */
 
 function startTimer(){
 
-/* Don't start duplicate timers */
+  clearInterval(timerInterval);
 
-if(timer!==null){
+  timeLeft = 60;
+  gameOver = false;
 
-return;
+  document.getElementById("timer").textContent = timeLeft;
+  document.getElementById("timer").classList.remove("warning");
 
+  timerInterval = setInterval(()=>{
+
+    timeLeft--;
+
+    document.getElementById("timer").textContent = timeLeft;
+
+    if(timeLeft <= 10){
+      document.getElementById("timer").classList.add("warning");
+    }
+
+    if(timeLeft <= 0){
+
+      clearInterval(timerInterval);
+
+      if(!gameOver){
+        showTimeout();
+      }
+
+    }
+
+  },1000);
 }
 
+/* PLAY */
 
-/* ALWAYS START AT 60 */
+function play(playerChoice,button){
 
-let seconds=60;
+  if(gameOver) return;
 
-timerText.innerText="60";
+  gameOver = true;
+  clearInterval(timerInterval);
 
-timerBox.classList.remove("warning");
+  document.querySelectorAll(".choice")
+    .forEach(btn=>btn.classList.remove("selected"));
 
+  button.classList.add("selected");
 
-timer=setInterval(
-async()=>{
+  const opponentChoice =
+    choices[Math.floor(Math.random()*choices.length)];
 
-seconds--;
+  document.getElementById("opponentAvatar").textContent =
+    icons[opponentChoice];
 
+  document.getElementById("playerAvatar").textContent =
+    icons[playerChoice];
 
-/* SHOW CURRENT SECOND */
+  const result = getResult(playerChoice,opponentChoice);
 
-timerText.innerText=
-String(seconds);
+  games++;
 
+  if(result === "win"){
+    wins++;
+    balance += 50;
+  }
 
-/* Warning under 10 seconds */
+  if(result === "loss"){
+    balance = Math.max(0,balance-25);
+  }
 
-if(seconds<=10){
+  updateStats();
 
-timerBox.classList.add("warning");
+  showResult(
+    result,
+    playerChoice,
+    opponentChoice
+  );
 
+  addHistory(
+    result,
+    playerChoice,
+    opponentChoice
+  );
 }
 
+/* RESULT LOGIC */
 
-/* TIME UP */
+function getResult(player,opponent){
 
-if(seconds<=0){
+  if(player === opponent) return "draw";
 
-stopTimer();
+  if(
+    (player==="stone" && opponent==="scissors") ||
+    (player==="paper" && opponent==="stone") ||
+    (player==="scissors" && opponent==="paper")
+  ){
+    return "win";
+  }
 
-try{
-
-const snapshot=
-await get(
-ref(db,"rooms/"+roomCode)
-);
-
-const data=snapshot.val();
-
-if(!data) return;
-
-
-/*
-Only finish automatically
-if neither player selected.
-*/
-
-if(
-!data.move1 &&
-!data.move2 &&
-!data.finished
-){
-
-await update(
-ref(db,"rooms/"+roomCode),
-{
-
-result:"⏰ Time Up!",
-finished:true
-
-}
-);
-
+  return "loss";
 }
 
-}
-catch(error){
+/* RESULT UI */
 
-console.error(error);
+function showResult(result,player,opponent){
 
-}
+  const box = document.getElementById("result");
+  const title = document.getElementById("resultTitle");
+  const sub = document.getElementById("resultSub");
 
-}
+  box.classList.add("show");
 
-},
-1000
-);
+  if(result==="win"){
+    title.textContent = "🎉 YOU WIN!";
+    title.className = "result-title win";
+  }
 
-}
+  if(result==="loss"){
+    title.textContent = "😢 YOU LOSE";
+    title.className = "result-title loss";
+  }
 
+  if(result==="draw"){
+    title.textContent = "🤝 DRAW";
+    title.className = "result-title draw";
+  }
 
-/* STOP TIMER */
+  sub.textContent =
+    names[player] + "  vs  " + names[opponent];
 
-function stopTimer(){
-
-if(timer!==null){
-
-clearInterval(timer);
-
-timer=null;
-
-}
-
-timerBox.classList.remove("warning");
-
-}
-
-
-/* LEAVE ROOM */
-
-document
-.getElementById("leaveBtn")
-.addEventListener(
-"click",
-leaveRoom
-);
-
-
-async function leaveRoom(){
-
-if(
-!confirm("Leave this room?")
-){
-
-return;
-
+  document.getElementById("newRound")
+    .classList.add("show");
 }
 
-stopTimer();
+/* TIMEOUT */
 
-try{
+function showTimeout(){
 
-if(player==="player1"){
+  gameOver = true;
 
-await remove(
-ref(db,"rooms/"+roomCode)
-);
+  games++;
 
+  updateStats();
+
+  const box = document.getElementById("result");
+
+  box.classList.add("show");
+
+  document.getElementById("resultTitle").textContent =
+    "⏰ TIME UP";
+
+  document.getElementById("resultTitle").className =
+    "result-title loss";
+
+  document.getElementById("resultSub").textContent =
+    "You didn't select a move.";
+
+  addHistory(
+    "loss",
+    "none",
+    "none"
+  );
+
+  document.getElementById("newRound")
+    .classList.add("show");
 }
-else{
 
-await update(
-ref(db,"rooms/"+roomCode),
-{
+/* NEW ROUND */
 
-player2:false,
-player2Name:"",
-move2:""
+function startNewRound(){
 
+  roundNumber++;
+
+  document.getElementById("round").textContent =
+    roundNumber;
+
+  document.getElementById("result")
+    .classList.remove("show");
+
+  document.getElementById("newRound")
+    .classList.remove("show");
+
+  document.getElementById("playerAvatar")
+    .textContent = "👤";
+
+  document.getElementById("opponentAvatar")
+    .textContent = "🤖";
+
+  document.querySelectorAll(".choice")
+    .forEach(btn=>btn.classList.remove("selected"));
+
+  startTimer();
 }
-);
 
+/* HISTORY */
+
+function addHistory(result,player,opponent){
+
+  const history =
+    document.getElementById("history");
+
+  const empty =
+    document.getElementById("empty");
+
+  if(empty){
+    empty.remove();
+  }
+
+  const item =
+    document.createElement("div");
+
+  item.className = "history-item";
+
+  let resultText = "";
+  let resultClass = "";
+
+  if(result==="win"){
+    resultText = "+50 COINS";
+    resultClass = "win";
+  }
+
+  if(result==="loss"){
+    resultText = "-25 COINS";
+    resultClass = "loss";
+  }
+
+  if(result==="draw"){
+    resultText = "DRAW";
+    resultClass = "draw";
+  }
+
+  if(player==="none"){
+    resultText = "TIME UP";
+    resultClass = "loss";
+  }
+
+  const playerIcon =
+    player==="none" ? "⏰" : icons[player];
+
+  const opponentIcon =
+    opponent==="none" ? "🤖" : icons[opponent];
+
+  item.innerHTML = `
+
+    <div class="history-left">
+
+      <div class="history-icon">
+        ${playerIcon}
+      </div>
+
+      <div>
+        <div class="history-round">
+          Round ${roundNumber}
+          ${player!=="none"
+            ? " • "+playerIcon+" vs "+opponentIcon
+            : ""}
+        </div>
+
+        <div class="history-time">
+          Just now
+        </div>
+      </div>
+
+    </div>
+
+    <div class="history-result ${resultClass}">
+      ${resultText}
+    </div>
+  `;
+
+  history.prepend(item);
+
+  /* Keep only last 10 */
+
+  const items =
+    history.querySelectorAll(".history-item");
+
+  if(items.length > 10){
+    items[items.length-1].remove();
+  }
 }
 
+/* STATS */
+
+function updateStats(){
+
+  document.getElementById("balance")
+    .textContent = balance;
+
+  document.getElementById("games")
+    .textContent = games;
+
+  document.getElementById("wins")
+    .textContent = wins;
+
+  const rate =
+    games === 0
+      ? 0
+      : Math.round((wins/games)*100);
+
+  document.getElementById("winrate")
+    .textContent = rate + "%";
 }
-catch(error){
 
-console.error(error);
+/* START */
 
-}
-
-location.reload();
-
-}
+startTimer();
 
 </script>
 
