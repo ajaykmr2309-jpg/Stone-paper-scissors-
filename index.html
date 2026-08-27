@@ -1,1739 +1,1094 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stone Paper Scissors</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stone Paper Scissors</title>
 
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box}
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+body{
+margin:0;
+min-height:100vh;
+font-family:Arial,sans-serif;
+background:#0f172a;
+color:white;
+text-align:center;
+}
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: #fff;
-      text-align: center;
-    }
+.container{
+width:100%;
+max-width:480px;
+margin:auto;
+padding:15px;
+}
 
-    .container {
-      width: 100%;
-      max-width: 480px;
-      margin: auto;
-      padding: 15px;
-    }
+.card{
+background:#1e293b;
+border-radius:20px;
+padding:25px 18px;
+margin-top:20px;
+box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
 
-    .card {
-      background: #1e293b;
-      border-radius: 20px;
-      padding: 22px 16px;
-      margin-top: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    }
+h1{
+margin:0 0 10px;
+font-size:34px;
+}
 
-    h1 {
-      margin: 0 0 8px;
-      font-size: 34px;
-    }
+h2{
+margin:8px 0 15px;
+}
 
-    h2 {
-      margin: 8px 0;
-    }
+input{
+width:100%;
+padding:15px;
+border:0;
+outline:0;
+border-radius:10px;
+font-size:17px;
+text-align:center;
+margin:10px 0;
+text-transform:uppercase;
+}
 
-    .player-name {
-      font-size: 19px;
-      font-weight: bold;
-      margin: 12px 0;
-    }
+button{
+border:0;
+border-radius:12px;
+cursor:pointer;
+font-size:16px;
+}
 
-    .small {
-      color: #cbd5e1;
-      font-size: 14px;
-    }
+.main-btn{
+width:100%;
+padding:15px;
+margin:7px 0;
+background:#22c55e;
+color:white;
+font-weight:bold;
+}
 
-    input {
-      width: 100%;
-      padding: 15px;
-      border: 0;
-      outline: 0;
-      border-radius: 10px;
-      font-size: 17px;
-      text-align: center;
-      margin: 10px 0;
-      text-transform: uppercase;
-    }
+.choice{
+width:85px;
+height:75px;
+margin:6px;
+font-size:40px;
+background:white;
+}
 
-    button {
-      border: 0;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 16px;
-    }
+.choice:disabled{
+opacity:.4;
+cursor:not-allowed;
+}
 
-    .main-btn {
-      width: 100%;
-      padding: 15px;
-      margin: 7px 0;
-      background: #22c55e;
-      color: white;
-      font-weight: bold;
-    }
+.secondary{
+background:#3b82f6;
+color:white;
+padding:14px;
+width:100%;
+margin-top:10px;
+}
 
-    .secondary {
-      background: #3b82f6;
-      color: white;
-      padding: 14px;
-      width: 100%;
-      margin-top: 8px;
-    }
+.danger{
+background:#ef4444;
+color:white;
+padding:12px 20px;
+margin-top:10px;
+}
 
-    .danger {
-      background: #ef4444;
-      color: white;
-      padding: 12px 20px;
-      margin-top: 10px;
-    }
+#game{
+display:none;
+}
 
-    .home-buttons {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-    }
+.room{
+margin:15px 0;
+font-size:20px;
+}
 
-    .home-buttons button {
-      flex: 1;
-    }
+.room-code{
+background:#334155;
+padding:8px 15px;
+border-radius:10px;
+display:inline-block;
+letter-spacing:2px;
+}
 
-    .choice {
-      width: 85px;
-      height: 75px;
-      margin: 6px;
-      font-size: 40px;
-      background: white;
-    }
+.score{
+display:flex;
+justify-content:space-around;
+background:#334155;
+border-radius:14px;
+padding:15px;
+margin:15px 0;
+}
 
-    .choice:disabled {
-      opacity: .4;
-      cursor: not-allowed;
-    }
+.score strong{
+font-size:28px;
+}
 
-    #game,
-    #leaderboard,
-    #history {
-      display: none;
-    }
+.timer{
+font-size:32px;
+font-weight:bold;
+margin:18px;
+}
 
-    .room {
-      margin: 15px 0;
-      font-size: 20px;
-    }
+.timer.warning{
+animation:blink .7s infinite;
+}
 
-    .room-code {
-      background: #334155;
-      padding: 8px 15px;
-      border-radius: 10px;
-      display: inline-block;
-      letter-spacing: 2px;
-    }
+@keyframes blink{
+50%{opacity:.45}
+}
 
-    .score {
-      display: flex;
-      justify-content: space-around;
-      background: #334155;
-      border-radius: 14px;
-      padding: 15px;
-      margin: 15px 0;
-    }
+.status{
+min-height:25px;
+margin:12px 0;
+}
 
-    .score strong {
-      font-size: 28px;
-    }
+.result{
+min-height:60px;
+margin:15px 0;
+font-size:24px;
+font-weight:bold;
+}
 
-    .timer {
-      font-size: 26px;
-      font-weight: bold;
-      margin: 15px;
-    }
+.hidden{
+display:none!important;
+}
 
-    .status {
-      min-height: 25px;
-      margin: 12px 0;
-    }
-
-    .result {
-      min-height: 60px;
-      margin: 15px 0;
-      font-size: 24px;
-      font-weight: bold;
-    }
-
-    .list-item {
-      background: #334155;
-      padding: 13px;
-      margin: 8px 0;
-      border-radius: 12px;
-      text-align: left;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-  </style>
+.small{
+color:#cbd5e1;
+font-size:14px;
+}
+</style>
 </head>
 
 <body>
 
 <div class="container">
 
-  <!-- HOME -->
+<!-- LOBBY -->
 
-  <div id="lobby" class="card">
+<div id="lobby" class="card">
 
-    <h1>🪨 📄 ✂️</h1>
+<h1>🪨 📄 ✂️</h1>
 
-    <h2>Stone Paper Scissors</h2>
+<h2>Stone Paper Scissors</h2>
 
-    <div class="player-name" id="lobbyPlayer">
-      Player
-    </div>
+<p class="small">🎮 2 Player Online</p>
 
-    <div class="small">
-      🎮 2 Player Online Game
-    </div>
+<button id="createBtn" class="main-btn">
+🎮 Create Room
+</button>
 
-    <br>
+<p>OR</p>
 
-    <button class="main-btn" id="createBtn">
-      🎮 Create Room
-    </button>
+<input
+id="roomInput"
+maxlength="6"
+placeholder="ROOM CODE">
 
-    <p>OR</p>
+<button id="joinBtn" class="main-btn">
+🔗 Join Room
+</button>
 
-    <input
-      id="roomInput"
-      maxlength="6"
-      placeholder="ROOM CODE"
-    >
+<p id="lobbyStatus" class="small"></p>
 
-    <button class="main-btn" id="joinBtn">
-      🔗 Join Room
-    </button>
-
-    <div class="home-buttons">
-
-      <button
-        class="secondary"
-        id="leaderboardBtn">
-        🏆 Leaderboard
-      </button>
-
-      <button
-        class="secondary"
-        id="historyBtn">
-        📜 History
-      </button>
-
-    </div>
-
-    <p id="lobbyStatus" class="small"></p>
-
-  </div>
+</div>
 
 
-  <!-- GAME -->
+<!-- GAME -->
 
-  <div id="game" class="card">
+<div id="game" class="card">
 
-    <h1>🪨 📄 ✂️</h1>
+<h1>🪨 📄 ✂️</h1>
 
-    <div class="room">
-      Room:
-      <div class="room-code" id="roomCode"></div>
-    </div>
+<div class="room">
+Room:
+<div class="room-code" id="roomCode"></div>
+</div>
 
-    <div class="score">
+<div class="score">
 
-      <div>
-        <span id="player1Name">Player 1</span>
-        <br>
-        <strong id="score1">0</strong>
-      </div>
+<div>
+<span id="player1Name">Player 1</span>
+<br>
+<strong id="score1">0</strong>
+</div>
 
-      <div>
-        <span id="player2Name">Player 2</span>
-        <br>
-        <strong id="score2">0</strong>
-      </div>
+<div>
+<span id="player2Name">Player 2</span>
+<br>
+<strong id="score2">0</strong>
+</div>
 
-    </div>
-
-    <div class="timer">
-      ⏱️ <span id="timer">15</span>
-    </div>
-
-    <div id="players" class="status">
-      Waiting for Player 2...
-    </div>
-
-    <div id="status" class="status">
-      Waiting for players...
-    </div>
-
-    <div>
-
-      <button class="choice" data-move="stone">🪨</button>
-
-      <button class="choice" data-move="paper">📄</button>
-
-      <button class="choice" data-move="scissors">✂️</button>
-
-    </div>
-
-    <div id="result" class="result"></div>
-
-    <button
-      id="newRoundBtn"
-      class="secondary hidden">
-      🔄 New Round
-    </button>
-
-    <button
-      id="leaveBtn"
-      class="danger">
-      🚪 Leave Room
-    </button>
-
-  </div>
+</div>
 
 
-  <!-- LEADERBOARD -->
+<!-- EXACT 60 SECOND TIMER -->
 
-  <div id="leaderboard" class="card">
-
-    <h1>🏆</h1>
-
-    <h2>Leaderboard</h2>
-
-    <div id="leaderboardList">
-      No matches played yet.
-    </div>
-
-    <button
-      class="secondary"
-      id="backFromLeaderboard">
-      ← Back
-    </button>
-
-  </div>
+<div class="timer" id="timerBox">
+⏱️ <span id="timer">60</span>
+</div>
 
 
-  <!-- HISTORY -->
+<div id="players" class="status">
+⏳ Waiting for Player 2...
+</div>
 
-  <div id="history" class="card">
+<div id="status" class="status">
+Waiting for players...
+</div>
 
-    <h1>📜</h1>
 
-    <h2>Match History</h2>
+<div>
 
-    <div id="historyList">
-      No matches played yet.
-    </div>
+<button class="choice" data-move="stone">
+🪨
+</button>
 
-    <button
-      class="secondary"
-      id="backFromHistory">
-      ← Back
-    </button>
+<button class="choice" data-move="paper">
+📄
+</button>
 
-  </div>
+<button class="choice" data-move="scissors">
+✂️
+</button>
+
+</div>
+
+
+<div id="result" class="result"></div>
+
+
+<button
+id="newRoundBtn"
+class="secondary hidden">
+🔄 New Round
+</button>
+
+
+<button
+id="leaveBtn"
+class="danger">
+🚪 Leave Room
+</button>
+
+</div>
 
 </div>
 
 
 <script type="module">
 
-/* =========================
-   FIREBASE
-========================= */
-
-import { initializeApp }
+import {initializeApp}
 from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
 import {
-  getDatabase,
-  ref,
-  set,
-  get,
-  update,
-  remove,
-  onValue
+getDatabase,
+ref,
+set,
+get,
+update,
+remove,
+onValue
 }
 from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
 
 
-const firebaseConfig = {
+/* FIREBASE */
 
-  apiKey:
-    "AIzaSyC5nCnRk8rHzEZX7BylT1T9T5lAWPkRQsjw",
+const firebaseConfig={
 
-  authDomain:
-    "stonepaperscissors-598d1.firebaseapp.com",
+apiKey:"AIzaSyC5nCnRk8rHzEZX7BylT1T9T5lAWPkRQsjw",
 
-  databaseURL:
-    "https://stonepaperscissors-598d1-default-rtdb.firebaseio.com",
+authDomain:
+"stonepaperscissors-598d1.firebaseapp.com",
 
-  projectId:
-    "stonepaperscissors-598d1",
+databaseURL:
+"https://stonepaperscissors-598d1-default-rtdb.firebaseio.com",
 
-  storageBucket:
-    "stonepaperscissors-598d1.firebasestorage.app",
+projectId:
+"stonepaperscissors-598d1",
 
-  messagingSenderId:
-    "699484749817",
+storageBucket:
+"stonepaperscissors-598d1.firebasestorage.app",
 
-  appId:
-    "1:699484749817:web:861e86fe13c4bf94ef8728",
+messagingSenderId:
+"699484749817",
 
-  measurementId:
-    "G-5HD3MDN5EC"
+appId:
+"1:699484749817:web:861e86fe13c4bf94ef8728",
+
+measurementId:
+"G-5HD3MDN5EC"
+
 };
 
 
-const app =
-  initializeApp(firebaseConfig);
+const app=initializeApp(firebaseConfig);
 
-const db =
-  getDatabase(app);
+const db=getDatabase(app);
 
 
-/* =========================
-   TELEGRAM
-========================= */
+/* VARIABLES */
 
-const tg =
-  window.Telegram &&
-  window.Telegram.WebApp
-    ? window.Telegram.WebApp
-    : null;
+let roomCode="";
+let player="";
+let myMove="";
+let timer=null;
+let processingResult=false;
 
 
-if (tg) {
+/* ELEMENTS */
 
-  tg.ready();
+const lobby=
+document.getElementById("lobby");
 
-  tg.expand();
+const game=
+document.getElementById("game");
+
+const roomInput=
+document.getElementById("roomInput");
+
+const roomCodeText=
+document.getElementById("roomCode");
+
+const playersText=
+document.getElementById("players");
+
+const statusText=
+document.getElementById("status");
+
+const resultText=
+document.getElementById("result");
+
+const timerText=
+document.getElementById("timer");
+
+const timerBox=
+document.getElementById("timerBox");
+
+const score1Text=
+document.getElementById("score1");
+
+const score2Text=
+document.getElementById("score2");
+
+const player1NameText=
+document.getElementById("player1Name");
+
+const player2NameText=
+document.getElementById("player2Name");
+
+const newRoundBtn=
+document.getElementById("newRoundBtn");
+
+
+/* PLAYER NAME */
+
+let myName="Player";
+
+const tg=
+window.Telegram &&
+window.Telegram.WebApp
+? window.Telegram.WebApp
+: null;
+
+if(tg){
+
+tg.ready();
+tg.expand();
+
+if(
+tg.initDataUnsafe &&
+tg.initDataUnsafe.user
+){
+
+const user=
+tg.initDataUnsafe.user;
+
+if(user.username){
+
+myName="@"+user.username;
+
+}
+else if(user.first_name){
+
+myName=user.first_name;
+
+}
+
+}
 
 }
 
 
-let telegramUser = null;
-
-
-if (
-  tg &&
-  tg.initDataUnsafe &&
-  tg.initDataUnsafe.user
-) {
-
-  telegramUser =
-    tg.initDataUnsafe.user;
-
-}
-
-
-let myName = "Player";
-
-
-if (telegramUser) {
-
-  if (telegramUser.username) {
-
-    myName =
-      "@" + telegramUser.username;
-
-  }
-
-  else if (telegramUser.first_name) {
-
-    myName =
-      telegramUser.first_name;
-
-  }
-
-}
-
-
-/* =========================
-   VARIABLES
-========================= */
-
-let roomCode = "";
-let player = "";
-let timer = null;
-let myMove = "";
-let processingResult = false;
-
-
-/* =========================
-   ELEMENTS
-========================= */
-
-const lobby =
-  document.getElementById("lobby");
-
-const game =
-  document.getElementById("game");
-
-const leaderboard =
-  document.getElementById("leaderboard");
-
-const history =
-  document.getElementById("history");
-
-const roomInput =
-  document.getElementById("roomInput");
-
-const lobbyPlayer =
-  document.getElementById("lobbyPlayer");
-
-const roomCodeText =
-  document.getElementById("roomCode");
-
-const playersText =
-  document.getElementById("players");
-
-const statusText =
-  document.getElementById("status");
-
-const resultText =
-  document.getElementById("result");
-
-const timerText =
-  document.getElementById("timer");
-
-const score1Text =
-  document.getElementById("score1");
-
-const score2Text =
-  document.getElementById("score2");
-
-const player1NameText =
-  document.getElementById("player1Name");
-
-const player2NameText =
-  document.getElementById("player2Name");
-
-const newRoundBtn =
-  document.getElementById("newRoundBtn");
-
-
-lobbyPlayer.innerText =
-  myName;
-
-
-/* =========================
-   SCREEN FUNCTIONS
-========================= */
-
-function showLobby() {
-
-  lobby.style.display = "block";
-
-  game.style.display = "none";
-
-  leaderboard.style.display = "none";
-
-  history.style.display = "none";
-
-}
-
-
-function showGame() {
-
-  lobby.style.display = "none";
-
-  game.style.display = "block";
-
-  leaderboard.style.display = "none";
-
-  history.style.display = "none";
-
-}
-
-
-function showLeaderboard() {
-
-  lobby.style.display = "none";
-
-  game.style.display = "none";
-
-  leaderboard.style.display = "block";
-
-  history.style.display = "none";
-
-  loadLeaderboard();
-
-}
-
-
-function showHistory() {
-
-  lobby.style.display = "none";
-
-  game.style.display = "none";
-
-  leaderboard.style.display = "none";
-
-  history.style.display = "block";
-
-  loadHistory();
-
-}
-
-
-/* =========================
-   CREATE ROOM
-========================= */
+/* CREATE ROOM */
 
 document
-  .getElementById("createBtn")
-  .addEventListener(
-    "click",
-    createRoom
-  );
-
-
-async function createRoom() {
-
-  try {
-
-    let newCode = "";
-
-    while (!newCode) {
-
-      const code =
-        Math.random()
-          .toString(36)
-          .substring(2, 8)
-          .toUpperCase();
-
-      const existing =
-        await get(
-          ref(db, "rooms/" + code)
-        );
-
-      if (!existing.exists()) {
-
-        newCode = code;
-
-      }
-
-    }
-
-
-    roomCode = newCode;
-
-    player = "player1";
-
-    await set(
-      ref(db, "rooms/" + roomCode),
-      {
-
-        player1: true,
-
-        player2: false,
-
-        player1Name: myName,
-
-        player2Name: "",
-
-        move1: "",
-
-        move2: "",
-
-        score1: 0,
-
-        score2: 0,
-
-        result: "",
-
-        round: 1,
-
-        finished: false
-
-      }
-    );
-
-
-    openGame();
-
-  }
-
-  catch (error) {
-
-    console.error(error);
-
-    alert(
-      "Could not create room"
-    );
-
-  }
-
-}
-
-
-/* =========================
-   JOIN ROOM
-========================= */
-
-document
-  .getElementById("joinBtn")
-  .addEventListener(
-    "click",
-    joinRoom
-  );
-
-
-async function joinRoom() {
-
-  try {
-
-    roomCode =
-      roomInput.value
-        .trim()
-        .toUpperCase();
-
-
-    if (roomCode.length !== 6) {
-
-      alert(
-        "Enter a valid 6 character room code"
-      );
-
-      return;
-
-    }
-
-
-    const roomRef =
-      ref(
-        db,
-        "rooms/" + roomCode
-      );
-
-
-    const snapshot =
-      await get(roomRef);
-
-
-    if (!snapshot.exists()) {
-
-      alert("Room not found");
-
-      return;
-
-    }
-
-
-    const data =
-      snapshot.val();
-
-
-    if (data.player2 === true) {
-
-      alert("Room is full");
-
-      return;
-
-    }
-
-
-    player = "player2";
-
-
-    await update(
-      roomRef,
-      {
-
-        player2: true,
-
-        player2Name: myName
-
-      }
-    );
-
-
-    openGame();
-
-  }
-
-  catch (error) {
-
-    console.error(error);
-
-    alert(
-      "Could not join room"
-    );
-
-  }
-
-}
-
-
-/* =========================
-   OPEN GAME
-========================= */
-
-function openGame() {
-
-  showGame();
-
-  roomCodeText.innerText =
-    roomCode;
-
-  listenRoom();
-
-}
-
-
-/* =========================
-   LISTEN ROOM
-========================= */
-
-function listenRoom() {
-
-  const roomRef =
-    ref(
-      db,
-      "rooms/" + roomCode
-    );
-
-
-  onValue(
-    roomRef,
-    snapshot => {
-
-      const data =
-        snapshot.val();
-
-
-      if (!data) {
-
-        alert("Room closed");
-
-        location.reload();
-
-        return;
-
-      }
-
-
-      score1Text.innerText =
-        data.score1 || 0;
-
-      score2Text.innerText =
-        data.score2 || 0;
-
-
-      player1NameText.innerText =
-        data.player1Name ||
-        "Player 1";
-
-
-      player2NameText.innerText =
-        data.player2Name ||
-        "Player 2";
-
-
-      if (
-        data.player1 &&
-        data.player2
-      ) {
-
-        playersText.innerText =
-          "👥 2 Players Connected";
-
-
-        if (
-          !data.move1 &&
-          !data.move2 &&
-          !data.finished
-        ) {
-
-          statusText.innerText =
-            "Choose your move";
-
-          startTimer();
-
-        }
-
-      }
-
-      else {
-
-        playersText.innerText =
-          "⏳ Waiting for Player 2...";
-
-        statusText.innerText =
-          "Waiting for Player 2...";
-
-        stopTimer();
-
-      }
-
-
-      if (
-        data.move1 &&
-        data.move2 &&
-        !data.finished
-      ) {
-
-        calculateResult(data);
-
-      }
-
-
-      if (data.finished) {
-
-        resultText.innerText =
-          data.result || "";
-
-        newRoundBtn
-          .classList
-          .remove("hidden");
-
-        stopTimer();
-
-      }
-
-    }
-  );
-
-}
-
-
-/* =========================
-   CHOICE BUTTONS
-========================= */
-
-document
-  .querySelectorAll(".choice")
-  .forEach(button => {
-
-    button.addEventListener(
-      "click",
-      () => {
-
-        makeMove(
-          button.dataset.move
-        );
-
-      }
-    );
-
-  });
-
-
-/* =========================
-   MAKE MOVE
-========================= */
-
-async function makeMove(move) {
-
-  if (myMove) return;
-
-  if (!roomCode || !player) return;
-
-
-  myMove = move;
-
-
-  document
-    .querySelectorAll(".choice")
-    .forEach(button => {
-
-      button.disabled = true;
-
-    });
-
-
-  const roomRef =
-    ref(
-      db,
-      "rooms/" + roomCode
-    );
-
-
-  try {
-
-    if (player === "player1") {
-
-      await update(
-        roomRef,
-        {
-          move1: move
-        }
-      );
-
-    }
-
-    else {
-
-      await update(
-        roomRef,
-        {
-          move2: move
-        }
-      );
-
-    }
-
-
-    statusText.innerText =
-      "✅ Move selected. Waiting for opponent...";
-
-  }
-
-  catch (error) {
-
-    console.error(error);
-
-    myMove = "";
-
-    document
-      .querySelectorAll(".choice")
-      .forEach(button => {
-
-        button.disabled = false;
-
-      });
-
-    alert(
-      "Could not save move"
-    );
-
-  }
-
-}
-
-
-/* =========================
-   CALCULATE RESULT
-========================= */
-
-async function calculateResult(data) {
-
-  if (processingResult) return;
-
-  processingResult = true;
-
-  stopTimer();
-
-
-  let result = "";
-
-  let score1 =
-    Number(data.score1 || 0);
-
-  let score2 =
-    Number(data.score2 || 0);
-
-
-  if (
-    data.move1 === data.move2
-  ) {
-
-    result =
-      "🤝 Draw!";
-
-  }
-
-  else if (
-
-    (
-      data.move1 === "stone" &&
-      data.move2 === "scissors"
-    )
-
-    ||
-
-    (
-      data.move1 === "paper" &&
-      data.move2 === "stone"
-    )
-
-    ||
-
-    (
-      data.move1 === "scissors" &&
-      data.move2 === "paper"
-    )
-
-  ) {
-
-    result =
-      "🏆 " +
-      (data.player1Name || "Player 1") +
-      " Wins!";
-
-    score1++;
-
-  }
-
-  else {
-
-    result =
-      "🏆 " +
-      (data.player2Name || "Player 2") +
-      " Wins!";
-
-    score2++;
-
-  }
-
-
-  try {
-
-    await update(
-      ref(
-        db,
-        "rooms/" + roomCode
-      ),
-      {
-
-        score1: score1,
-
-        score2: score2,
-
-        result: result,
-
-        finished: true
-
-      }
-    );
-
-
-    saveMatch(
-      data,
-      result
-    );
-
-  }
-
-  catch (error) {
-
-    console.error(error);
-
-  }
-
-
-  resultText.innerText =
-    result;
-
-  newRoundBtn
-    .classList
-    .remove("hidden");
-
-}
-
-
-/* =========================
-   NEW ROUND
-========================= */
-
-newRoundBtn.addEventListener(
-  "click",
-  newRound
+.getElementById("createBtn")
+.addEventListener(
+"click",
+createRoom
 );
 
 
-async function newRound() {
+async function createRoom(){
 
-  try {
+try{
 
-    myMove = "";
+roomCode=
+Math.random()
+.toString(36)
+.substring(2,8)
+.toUpperCase();
 
-    processingResult = false;
+player="player1";
 
-    stopTimer();
+await set(
+ref(db,"rooms/"+roomCode),
+{
 
+player1:true,
+player2:false,
 
-    document
-      .querySelectorAll(".choice")
-      .forEach(button => {
+player1Name:myName,
+player2Name:"",
 
-        button.disabled = false;
+move1:"",
+move2:"",
 
-      });
+score1:0,
+score2:0,
 
+result:"",
+finished:false,
 
-    resultText.innerText = "";
+round:1
 
-    statusText.innerText =
-      "Choose your move";
+}
+);
 
+openGame();
 
-    newRoundBtn
-      .classList
-      .add("hidden");
+}
+catch(error){
 
+console.error(error);
 
-    const snapshot =
-      await get(
-        ref(
-          db,
-          "rooms/" + roomCode
-        )
-      );
+alert(
+"Could not create room"
+);
 
-
-    const data =
-      snapshot.val();
-
-
-    if (!data) return;
-
-
-    const nextRound =
-      Number(data.round || 1) + 1;
-
-
-    await update(
-      ref(
-        db,
-        "rooms/" + roomCode
-      ),
-      {
-
-        move1: "",
-
-        move2: "",
-
-        result: "",
-
-        finished: false,
-
-        round: nextRound
-
-      }
-    );
-
-
-    startTimer();
-
-  }
-
-  catch (error) {
-
-    console.error(error);
-
-    alert(
-      "Could not start new round"
-    );
-
-  }
+}
 
 }
 
 
-/* =========================
-   TIMER
-========================= */
-
-function startTimer() {
-
-  if (timer) return;
-
-  let seconds = 15;
-
-  timerText.innerText =
-    seconds;
-
-
-  timer =
-    setInterval(
-      async () => {
-
-        seconds--;
-
-        timerText.innerText =
-          seconds;
-
-
-        if (seconds <= 0) {
-
-          stopTimer();
-
-
-          try {
-
-            const snapshot =
-              await get(
-                ref(
-                  db,
-                  "rooms/" + roomCode
-                )
-              );
-
-
-            const data =
-              snapshot.val();
-
-
-            if (!data) return;
-
-
-            if (
-              !data.move1 &&
-              !data.move2 &&
-              !data.finished
-            ) {
-
-              await update(
-                ref(
-                  db,
-                  "rooms/" + roomCode
-                ),
-                {
-
-                  result:
-                    "⏰ Time Up!",
-
-                  finished:
-                    true
-
-                }
-              );
-
-            }
-
-          }
-
-          catch (error) {
-
-            console.error(error);
-
-          }
-
-        }
-
-      },
-      1000
-    );
-
-}
-
-
-function stopTimer() {
-
-  if (timer) {
-
-    clearInterval(timer);
-
-    timer = null;
-
-  }
-
-}
-
-
-/* =========================
-   LEAVE ROOM
-========================= */
+/* JOIN ROOM */
 
 document
-  .getElementById("leaveBtn")
-  .addEventListener(
-    "click",
-    leaveRoom
-  );
+.getElementById("joinBtn")
+.addEventListener(
+"click",
+joinRoom
+);
 
 
-async function leaveRoom() {
+async function joinRoom(){
 
-  if (
-    !confirm("Leave this room?")
-  ) {
+try{
 
-    return;
+roomCode=
+roomInput.value
+.trim()
+.toUpperCase();
 
-  }
+if(roomCode.length!==6){
 
+alert(
+"Enter valid 6 character room code"
+);
 
-  stopTimer();
+return;
 
+}
 
-  try {
+const roomRef=
+ref(db,"rooms/"+roomCode);
 
-    if (player === "player1") {
+const snapshot=
+await get(roomRef);
 
-      await remove(
-        ref(
-          db,
-          "rooms/" + roomCode
-        )
-      );
+if(!snapshot.exists()){
 
-    }
+alert("Room not found");
 
-    else {
+return;
 
-      await update(
-        ref(
-          db,
-          "rooms/" + roomCode
-        ),
-        {
+}
 
-          player2: false,
+const data=snapshot.val();
 
-          player2Name: "",
+if(data.player2){
 
-          move2: ""
+alert("Room is full");
 
-        }
-      );
+return;
 
-    }
+}
 
-  }
+player="player2";
 
-  catch (error) {
+await update(
+roomRef,
+{
 
-    console.error(error);
+player2:true,
+player2Name:myName
 
-  }
+}
+);
 
+openGame();
 
-  location.reload();
+}
+catch(error){
+
+console.error(error);
+
+alert(
+"Could not join room"
+);
+
+}
 
 }
 
 
-/* =========================
-   LOCAL MATCH HISTORY
-========================= */
+/* OPEN GAME */
 
-function saveMatch(data, result) {
+function openGame(){
 
-  try {
+lobby.style.display="none";
 
-    const matches =
-      JSON.parse(
-        localStorage.getItem(
-          "sps_matches"
-        ) || "[]"
-      );
+game.style.display="block";
 
+roomCodeText.innerText=
+roomCode;
 
-    matches.unshift({
-
-      player1:
-        data.player1Name ||
-        "Player 1",
-
-      player2:
-        data.player2Name ||
-        "Player 2",
-
-      result:
-        result,
-
-      time:
-        new Date().toLocaleString()
-
-    });
-
-
-    localStorage.setItem(
-      "sps_matches",
-      JSON.stringify(
-        matches.slice(0, 50)
-      )
-    );
-
-  }
-
-  catch (error) {
-
-    console.error(error);
-
-  }
+listenRoom();
 
 }
 
 
-/* =========================
-   HISTORY SCREEN
-========================= */
+/* LISTEN ROOM */
 
-function loadHistory() {
+function listenRoom(){
 
-  const list =
-    document.getElementById(
-      "historyList"
-    );
+const roomRef=
+ref(db,"rooms/"+roomCode);
 
+onValue(
+roomRef,
+snapshot=>{
 
-  let matches = [];
+const data=snapshot.val();
 
+if(!data){
 
-  try {
+alert("Room closed");
 
-    matches =
-      JSON.parse(
-        localStorage.getItem(
-          "sps_matches"
-        ) || "[]"
-      );
+location.reload();
 
-  }
-
-  catch (error) {
-
-    matches = [];
-
-  }
-
-
-  if (!matches.length) {
-
-    list.innerHTML =
-      "No matches played yet.";
-
-    return;
-
-  }
-
-
-  list.innerHTML = "";
-
-
-  matches.forEach(match => {
-
-    const item =
-      document.createElement("div");
-
-    item.className =
-      "list-item";
-
-    item.innerHTML =
-      "<b>" +
-      escapeHTML(match.player1) +
-      "</b> vs <b>" +
-      escapeHTML(match.player2) +
-      "</b><br>" +
-      escapeHTML(match.result) +
-      "<br><span class='small'>" +
-      escapeHTML(match.time) +
-      "</span>";
-
-    list.appendChild(item);
-
-  });
+return;
 
 }
 
 
-/* =========================
-   LOCAL LEADERBOARD
-========================= */
+score1Text.innerText=
+data.score1||0;
 
-function loadLeaderboard() {
-
-  const list =
-    document.getElementById(
-      "leaderboardList"
-    );
+score2Text.innerText=
+data.score2||0;
 
 
-  let matches = [];
+player1NameText.innerText=
+data.player1Name||
+"Player 1";
+
+player2NameText.innerText=
+data.player2Name||
+"Player 2";
 
 
-  try {
+if(
+data.player1 &&
+data.player2
+){
 
-    matches =
-      JSON.parse(
-        localStorage.getItem(
-          "sps_matches"
-        ) || "[]"
-      );
-
-  }
-
-  catch (error) {
-
-    matches = [];
-
-  }
+playersText.innerText=
+"👥 2 Players Connected";
 
 
-  if (!matches.length) {
+if(
+!data.move1 &&
+!data.move2 &&
+!data.finished
+){
 
-    list.innerHTML =
-      "No matches played yet.";
+statusText.innerText=
+"Choose your move";
 
-    return;
+startTimer();
 
-  }
+}
 
+}
+else{
 
-  const scores = {};
+playersText.innerText=
+"⏳ Waiting for Player 2...";
 
+statusText.innerText=
+"Waiting for Player 2...";
 
-  matches.forEach(match => {
-
-    const text =
-      match.result || "";
-
-
-    if (
-      text.includes(
-        match.player1
-      )
-    ) {
-
-      scores[match.player1] =
-        (scores[match.player1] || 0) + 1;
-
-    }
-
-
-    if (
-      text.includes(
-        match.player2
-      )
-    ) {
-
-      scores[match.player2] =
-        (scores[match.player2] || 0) + 1;
-
-    }
-
-  });
-
-
-  const sorted =
-    Object.entries(scores)
-      .sort(
-        (a, b) => b[1] - a[1]
-      );
-
-
-  if (!sorted.length) {
-
-    list.innerHTML =
-      "No wins yet.";
-
-    return;
-
-  }
-
-
-  list.innerHTML = "";
-
-
-  sorted.forEach(
-    ([name, wins], index) => {
-
-      const item =
-        document.createElement("div");
-
-      item.className =
-        "list-item";
-
-      item.innerHTML =
-        "<b>#" +
-        (index + 1) +
-        "</b> " +
-        escapeHTML(name) +
-        " — 🏆 " +
-        wins +
-        " wins";
-
-      list.appendChild(item);
-
-    }
-  );
+stopTimer();
 
 }
 
 
-/* =========================
-   SAFE TEXT
-========================= */
+if(
+data.move1 &&
+data.move2 &&
+!data.finished
+){
 
-function escapeHTML(value) {
-
-  return String(value)
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-    .replace(
-      /</g,
-      "&lt;"
-    )
-    .replace(
-      />/g,
-      "&gt;"
-    )
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-    .replace(
-      /'/g,
-      "&#039;"
-    );
+calculateResult(data);
 
 }
 
 
-/* =========================
-   NAVIGATION
-========================= */
+if(data.finished){
+
+resultText.innerText=
+data.result||"";
+
+newRoundBtn
+.classList
+.remove("hidden");
+
+stopTimer();
+
+}
+
+}
+);
+
+}
+
+
+/* CHOICE BUTTONS */
 
 document
-  .getElementById("leaderboardBtn")
-  .addEventListener(
-    "click",
-    showLeaderboard
-  );
+.querySelectorAll(".choice")
+.forEach(button=>{
 
+button.addEventListener(
+"click",
+()=>{
+
+makeMove(
+button.dataset.move
+);
+
+}
+);
+
+});
+
+
+/* MAKE MOVE */
+
+async function makeMove(move){
+
+if(myMove) return;
+
+myMove=move;
 
 document
-  .getElementById("historyBtn")
-  .addEventListener(
-    "click",
-    showHistory
-  );
+.querySelectorAll(".choice")
+.forEach(button=>{
 
+button.disabled=true;
+
+});
+
+
+try{
+
+const roomRef=
+ref(db,"rooms/"+roomCode);
+
+if(player==="player1"){
+
+await update(
+roomRef,
+{move1:move}
+);
+
+}
+else{
+
+await update(
+roomRef,
+{move2:move}
+);
+
+}
+
+statusText.innerText=
+"✅ Move selected. Waiting for opponent...";
+
+}
+catch(error){
+
+console.error(error);
+
+myMove="";
 
 document
-  .getElementById("backFromLeaderboard")
-  .addEventListener(
-    "click",
-    showLobby
-  );
+.querySelectorAll(".choice")
+.forEach(button=>{
 
+button.disabled=false;
+
+});
+
+}
+
+}
+
+
+/* RESULT */
+
+async function calculateResult(data){
+
+if(processingResult) return;
+
+processingResult=true;
+
+stopTimer();
+
+let score1=
+Number(data.score1||0);
+
+let score2=
+Number(data.score2||0);
+
+let result="";
+
+
+if(data.move1===data.move2){
+
+result="🤝 Draw!";
+
+}
+
+else if(
+
+(
+data.move1==="stone" &&
+data.move2==="scissors"
+)
+
+||
+
+(
+data.move1==="paper" &&
+data.move2==="stone"
+)
+
+||
+
+(
+data.move1==="scissors" &&
+data.move2==="paper"
+)
+
+){
+
+score1++;
+
+result=
+"🏆 "+
+(data.player1Name||"Player 1")+
+" Wins!";
+
+}
+
+else{
+
+score2++;
+
+result=
+"🏆 "+
+(data.player2Name||"Player 2")+
+" Wins!";
+
+}
+
+
+await update(
+ref(db,"rooms/"+roomCode),
+{
+
+score1:score1,
+score2:score2,
+result:result,
+finished:true
+
+}
+);
+
+}
+
+
+/* NEW ROUND */
+
+newRoundBtn.addEventListener(
+"click",
+newRound
+);
+
+
+async function newRound(){
+
+myMove="";
+
+processingResult=false;
+
+stopTimer();
 
 document
-  .getElementById("backFromHistory")
-  .addEventListener(
-    "click",
-    showLobby
-  );
+.querySelectorAll(".choice")
+.forEach(button=>{
+
+button.disabled=false;
+
+});
+
+resultText.innerText="";
+
+statusText.innerText=
+"Choose your move";
+
+newRoundBtn
+.classList
+.add("hidden");
 
 
-/* START */
+await update(
+ref(db,"rooms/"+roomCode),
+{
 
-showLobby();
+move1:"",
+move2:"",
+result:"",
+finished:false
+
+}
+);
+
+
+/*
+IMPORTANT:
+Timer starts from EXACTLY 60
+*/
+
+startTimer();
+
+}
+
+
+/* =================================
+   60 SECOND COUNTDOWN
+   60 → 59 → 58 → ... → 0
+================================= */
+
+function startTimer(){
+
+/* Don't start duplicate timers */
+
+if(timer!==null){
+
+return;
+
+}
+
+
+/* ALWAYS START AT 60 */
+
+let seconds=60;
+
+timerText.innerText="60";
+
+timerBox.classList.remove("warning");
+
+
+timer=setInterval(
+async()=>{
+
+seconds--;
+
+
+/* SHOW CURRENT SECOND */
+
+timerText.innerText=
+String(seconds);
+
+
+/* Warning under 10 seconds */
+
+if(seconds<=10){
+
+timerBox.classList.add("warning");
+
+}
+
+
+/* TIME UP */
+
+if(seconds<=0){
+
+stopTimer();
+
+try{
+
+const snapshot=
+await get(
+ref(db,"rooms/"+roomCode)
+);
+
+const data=snapshot.val();
+
+if(!data) return;
+
+
+/*
+Only finish automatically
+if neither player selected.
+*/
+
+if(
+!data.move1 &&
+!data.move2 &&
+!data.finished
+){
+
+await update(
+ref(db,"rooms/"+roomCode),
+{
+
+result:"⏰ Time Up!",
+finished:true
+
+}
+);
+
+}
+
+}
+catch(error){
+
+console.error(error);
+
+}
+
+}
+
+},
+1000
+);
+
+}
+
+
+/* STOP TIMER */
+
+function stopTimer(){
+
+if(timer!==null){
+
+clearInterval(timer);
+
+timer=null;
+
+}
+
+timerBox.classList.remove("warning");
+
+}
+
+
+/* LEAVE ROOM */
+
+document
+.getElementById("leaveBtn")
+.addEventListener(
+"click",
+leaveRoom
+);
+
+
+async function leaveRoom(){
+
+if(
+!confirm("Leave this room?")
+){
+
+return;
+
+}
+
+stopTimer();
+
+try{
+
+if(player==="player1"){
+
+await remove(
+ref(db,"rooms/"+roomCode)
+);
+
+}
+else{
+
+await update(
+ref(db,"rooms/"+roomCode),
+{
+
+player2:false,
+player2Name:"",
+move2:""
+
+}
+);
+
+}
+
+}
+catch(error){
+
+console.error(error);
+
+}
+
+location.reload();
+
+}
 
 </script>
 
